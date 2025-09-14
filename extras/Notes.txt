@@ -1,0 +1,20 @@
+/*
+  Design history/thoughts
+
+  Original concept of signal recorder and player was implemented before
+  2024 when I've just used "libraries" directory for development.
+  Now that repo is called "Scrapyard" and not maintained.
+
+  I've reimplemented it 2025-03.
+
+  In 2025-09 I want separate classes for recorder and player.
+  Ideally they should not use internal array, they should write
+  and read from stream.
+
+  But our signals are too short to spend time on their transmission
+  and receiving.
+
+  So internally they will keep their array for fast write and read.
+  But external interface will become stream.
+*/
+
