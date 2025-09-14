@@ -31,7 +31,15 @@ void TestRecorderClass()
   Recorder.Add({true, { 0, 2, 0, 0 } });
   Recorder.Add({false, { 0, 2, 9, 500 } });
 
+  Console.Print("--");
   Recorder.Save(Console.GetOutputStream());
+  Console.Print("--");
+  Recorder.Differentiate();
+  Recorder.Save(Console.GetOutputStream());
+  Console.Print("--");
+  Recorder.Differentiate();
+  Recorder.Save(Console.GetOutputStream());
+  Console.Print("--");
 }
 
 void setup()

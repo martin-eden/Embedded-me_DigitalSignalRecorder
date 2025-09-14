@@ -37,76 +37,8 @@ void TDigitalSignalRecorder::Init(
   InitDone = true;
 }
 
-// [Internal] Get address of element in our array
-TSignalSegment * GetSlotAddr(
-  TAddressSegment Span,
-  TUint_2 Index
-)
-{
-  // Fucking love majestic C! Fake arrays
-  TAddress SlotAddr;
-
-  SlotAddr = Index * sizeof(TSignalSegment) + Span.Addr;
-
-  return (TSignalSegment *) SlotAddr;
-}
-
-// Add signal segment
-TBool TDigitalSignalRecorder::Add(
-  TSignalSegment SigSeg
-)
-{
-  TSignalSegment * SigSegPtr;
-
-  if (!InitDone)
-    return false;
-
-  if (NumEvents == NumEvents_Max)
-    return false;
-
-  SigSegPtr = GetSlotAddr(Span, NumEvents);
-  *SigSegPtr = SigSeg;
-
-  NumEvents = NumEvents + 1;
-
-  return true;
-}
-
-// Save signals to some loadable format
-void TDigitalSignalRecorder::Save(
-  IOutputStream * OutputStream
-)
-{
-  if (!InitDone)
-    return;
-
-  if (NumEvents < 2)
-    return;
-
-  for (TUint_2 Index = 1; Index < NumEvents; ++Index)
-  {
-    TSignalSegment * PrevSigsegPtr;
-    TSignalSegment * CurSigsegPtr;
-    TSignalSegment CorrectedSigseg;
-    TBool IsOk;
-
-    PrevSigsegPtr = GetSlotAddr(Span, Index - 1);
-    CurSigsegPtr = GetSlotAddr(Span, Index);
-
-    IsOk =
-      Freetown::GetDurationSegment(
-        &CorrectedSigseg, *PrevSigsegPtr, *CurSigsegPtr
-      );
-
-    if (!IsOk)
-      break;
-
-    Freetown::SerializeSegment(CorrectedSigseg, OutputStream);
-  }
-}
-
 // Start recording
-void StartRecording()
+void TDigitalSignalRecorder::StartRecording()
 {
   me_Counters::TCounter2 CaptiveCounter;
 
@@ -117,7 +49,7 @@ void StartRecording()
 }
 
 // Stop recording
-void StopRecording()
+void TDigitalSignalRecorder::StopRecording()
 {
   me_Counters::TCounter2 CaptiveCounter;
 
@@ -125,6 +57,131 @@ void StopRecording()
   CaptiveCounter.Status->GotEventMark = true; // yep, cleared by one
 
   me_RunTime::Stop();
+}
+
+// [Internal] Get address of element in our array
+TSignalSegment * GetSlotAddr(
+  TAddressSegment Span,
+  TUint_2 Index
+)
+{
+  // Fucking love majestic C! Fake arrays
+  TAddress SlotAddr;
+
+  // We want 1-based indexes but we can't fail on index 0
+  if (Index == 0)
+    Index = 1;
+
+  SlotAddr = (Index - 1) * sizeof(TSignalSegment) + Span.Addr;
+
+  return (TSignalSegment *) SlotAddr;
+}
+
+// Return a copy of event data
+TBool TDigitalSignalRecorder::GetEvent(
+  TSignalSegment * Event,
+  TUint_2 Index
+)
+{
+  if (Index > NumEvents)
+    return false;
+
+  *Event = *GetSlotAddr(Span, Index);
+
+  return true;
+}
+
+// Set event data
+TBool TDigitalSignalRecorder::SetEvent(
+  TSignalSegment Event,
+  TUint_2 Index
+)
+{
+  TSignalSegment * EventSlotPtr;
+
+  if (Index > NumEvents)
+    return false;
+
+  EventSlotPtr = GetSlotAddr(Span, Index);
+
+  *EventSlotPtr = Event;
+
+  return true;
+}
+
+// Add signal segment
+TBool TDigitalSignalRecorder::Add(
+  TSignalSegment SigSeg
+)
+{
+  if (!InitDone)
+    return false;
+
+  if (NumEvents == NumEvents_Max)
+    return false;
+
+  NumEvents = NumEvents + 1;
+
+  return SetEvent(SigSeg, NumEvents);
+}
+
+// Replace time value with time difference from prev value
+void TDigitalSignalRecorder::Differentiate()
+{
+  TUint_2 Index;
+  TSignalSegment PrevEvent;
+  TSignalSegment CurEvent;
+  TSignalSegment CorrectedEvent;
+  TBool IsOk;
+
+  if (!InitDone)
+    return;
+
+  if (NumEvents < 2)
+    return;
+
+  Index = 2;
+
+  while (true)
+  {
+    GetEvent(&PrevEvent, Index - 1);
+    GetEvent(&CurEvent, Index);
+
+    IsOk =
+      Freetown::GetDurationSegment(
+        &CorrectedEvent, PrevEvent, CurEvent
+      );
+
+    if (!IsOk)
+      break;
+
+    SetEvent(CorrectedEvent, Index - 1);
+
+    if (Index == NumEvents)
+      break;
+
+    Index = Index + 1;
+  }
+
+  NumEvents = Index - 1;
+}
+
+// Save signals to some loadable format
+void TDigitalSignalRecorder::Save(
+  IOutputStream * OutputStream
+)
+{
+  if (!InitDone)
+    return;
+
+  for (TUint_2 Index = 1; Index <= NumEvents; ++Index)
+  {
+    TSignalSegment CurEvent;
+
+    GetEvent(&CurEvent, Index);
+
+    Freetown::SerializeSegment(CurEvent, OutputStream);
+  }
 }
 
 // Setting "extern" singleton

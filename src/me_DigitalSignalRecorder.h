@@ -34,8 +34,17 @@ namespace me_DigitalSignalRecorder
   {
     public:
       void Init(TAddressSegment);
+      void StartRecording();
+      void StopRecording();
+
       TBool Add(TSignalSegment);
+      void Differentiate();
+
       void Save(IOutputStream *);
+
+      TBool GetEvent(TSignalSegment * Event, TUint_2 Index);
+      TBool SetEvent(TSignalSegment Event, TUint_2 Index);
+
     private:
       TBool InitDone = false;
       TAddressSegment Span;
@@ -45,9 +54,6 @@ namespace me_DigitalSignalRecorder
 
   // Singleton instance
   extern TDigitalSignalRecorder DigitalSignalRecorder;
-
-  void StartRecording();
-  void StopRecording();
 
   namespace Freetown
   {
