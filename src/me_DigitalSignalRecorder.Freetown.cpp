@@ -9,30 +9,10 @@
 
 #include <me_BaseTypes.h>
 #include <me_BaseInterfaces.h>
-#include <me_Timestamp.h>
 #include <me_Console.h>
 #include <me_DebugPrints.h>
 
 using namespace me_DigitalSignalRecorder;
-
-/*
-  Convert two events with timestamps to one with duration
-
-  Signal events store timestamp while they should store
-  duration since last segment. We're doing this correction
-  here.
-*/
-TBool Freetown::GetDurationSegment(
-  TSignalEvent * Result,
-  TSignalEvent Prev,
-  TSignalEvent Current
-)
-{
-  Result->IsOn = Prev.IsOn;
-  Result->Timestamp = Current.Timestamp;
-
-  return me_Timestamp::Subtract(&Result->Timestamp, Prev.Timestamp);
-}
 
 /*
   Write signal event to output stream in some convenient format

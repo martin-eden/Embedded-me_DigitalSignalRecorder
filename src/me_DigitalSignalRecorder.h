@@ -66,11 +66,6 @@ namespace me_DigitalSignalRecorder
 
   namespace Freetown
   {
-    TBool GetDurationSegment(
-      TSignalEvent * Result,
-      TSignalEvent Prev,
-      TSignalEvent Current
-    );
     void SerializeEvent(TSignalEvent, IOutputStream *);
   }
 }
