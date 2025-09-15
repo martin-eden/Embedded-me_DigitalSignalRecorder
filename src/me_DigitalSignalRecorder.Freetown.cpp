@@ -2,43 +2,43 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-09-14
+  Last mod.: 2025-09-15
 */
 
 #include <me_DigitalSignalRecorder.h>
 
 #include <me_BaseTypes.h>
 #include <me_BaseInterfaces.h>
+#include <me_Timestamp.h>
 #include <me_Console.h>
 #include <me_DebugPrints.h>
-#include <me_Timestamp.h>
 
 using namespace me_DigitalSignalRecorder;
 
 /*
-  Convert two segments with timestamps to one with duration
+  Convert two events with timestamps to one with duration
 
-  Signal segments store timestamp while they should store
+  Signal events store timestamp while they should store
   duration since last segment. We're doing this correction
   here.
 */
 TBool Freetown::GetDurationSegment(
-  TSignalSegment * Result,
-  TSignalSegment Prev,
-  TSignalSegment Current
+  TSignalEvent * Result,
+  TSignalEvent Prev,
+  TSignalEvent Current
 )
 {
   Result->IsOn = Prev.IsOn;
-  Result->Duration = Current.Duration;
+  Result->Timestamp = Current.Timestamp;
 
-  return me_Timestamp::Subtract(&Result->Duration, Prev.Duration);
+  return me_Timestamp::Subtract(&Result->Timestamp, Prev.Timestamp);
 }
 
 /*
-  Write segment to output stream in some convenient format
+  Write signal event to output stream in some convenient format
 */
-void Freetown::SerializeSegment(
-  TSignalSegment SigSeg,
+void Freetown::SerializeEvent(
+  TSignalEvent SigSeg,
   IOutputStream * OutputStream
 )
 {
@@ -55,7 +55,7 @@ void Freetown::SerializeSegment(
 
   Console.Write("(");
   Console.Print(SigSeg.IsOn);
-  me_DebugPrints::PrintDuration(SigSeg.Duration);
+  me_DebugPrints::PrintDuration(SigSeg.Timestamp);
   Console.Write(" )");
   Console.EndLine();
 

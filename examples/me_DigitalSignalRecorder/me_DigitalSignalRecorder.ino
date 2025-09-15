@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-09-14
+  Last mod.: 2025-09-15
 */
 
 #include <me_DigitalSignalRecorder.h>
@@ -16,7 +16,7 @@
 void TestRecorderClass()
 {
   const TUint_1 NumSignals_Max = 4;
-  me_DigitalSignalRecorder::TSignalSegment Signals[NumSignals_Max];
+  me_DigitalSignalRecorder::TSignalEvent Signals[NumSignals_Max];
   TAddressSegment SignalsSpan;
   me_DigitalSignalRecorder::TDigitalSignalRecorder Recorder;
 
@@ -32,13 +32,7 @@ void TestRecorderClass()
   Recorder.Add({false, { 0, 2, 9, 500 } });
 
   Console.Print("--");
-  Recorder.Save(Console.GetOutputStream());
-  Console.Print("--");
-  Recorder.Differentiate();
-  Recorder.Save(Console.GetOutputStream());
-  Console.Print("--");
-  Recorder.Differentiate();
-  Recorder.Save(Console.GetOutputStream());
+  me_DigitalSignalRecorder::Save(&Recorder, Console.GetOutputStream());
   Console.Print("--");
 }
 

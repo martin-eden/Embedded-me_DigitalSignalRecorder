@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-09-14
+  Last mod.: 2025-09-15
 */
 
 /*
@@ -24,26 +24,27 @@
 
 namespace me_DigitalSignalRecorder
 {
-  struct TSignalSegment
+  struct TSignalEvent
   {
     TBool IsOn;
-    me_Timestamp::TTimestamp Duration;
+    me_Timestamp::TTimestamp Timestamp;
   };
 
+  /*
+    Signal recorder
+
+    Contract of this class is provide events with
+    _timestamp_, not with _duration_.
+  */
   class TDigitalSignalRecorder
   {
     public:
-      void Init(TAddressSegment);
-      void StartRecording();
-      void StopRecording();
+      void Init(TAddressSegment Span);
 
-      TBool Add(TSignalSegment);
-      void Differentiate();
+      TBool Add(TSignalEvent Event);
 
-      void Save(IOutputStream *);
-
-      TBool GetEvent(TSignalSegment * Event, TUint_2 Index);
-      TBool SetEvent(TSignalSegment Event, TUint_2 Index);
+      TBool GetEvent(TSignalEvent * Event, TUint_2 Index);
+      TBool SetEvent(TSignalEvent Event, TUint_2 Index);
 
     private:
       TBool InitDone = false;
@@ -55,14 +56,22 @@ namespace me_DigitalSignalRecorder
   // Singleton instance
   extern TDigitalSignalRecorder DigitalSignalRecorder;
 
+  // ( Start/stop adding events to singleton
+  void StartRecording();
+  void StopRecording();
+  // )
+
+  // Serializer of signal recorder data
+  void Save(TDigitalSignalRecorder *, IOutputStream *);
+
   namespace Freetown
   {
     TBool GetDurationSegment(
-      TSignalSegment * Result,
-      TSignalSegment Prev,
-      TSignalSegment Current
+      TSignalEvent * Result,
+      TSignalEvent Prev,
+      TSignalEvent Current
     );
-    void SerializeSegment(TSignalSegment, IOutputStream *);
+    void SerializeEvent(TSignalEvent, IOutputStream *);
   }
 }
 
@@ -74,4 +83,5 @@ extern "C" void __vector_10() __attribute__((interrupt, used));
   2025-09-12
   2025-09-13
   2025-09-14
+  2025-09-15
 */

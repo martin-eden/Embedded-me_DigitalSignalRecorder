@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-09-14
+  Last mod.: 2025-09-15
 */
 
 /*
@@ -32,35 +32,13 @@ void TDigitalSignalRecorder::Init(
 
   NumEvents = 0;
 
-  NumEvents_Max = Span.Size / sizeof(TSignalSegment);
+  NumEvents_Max = Span.Size / sizeof(TSignalEvent);
 
   InitDone = true;
 }
 
-// Start recording
-void TDigitalSignalRecorder::StartRecording()
-{
-  me_Counters::TCounter2 CaptiveCounter;
-
-  me_RunTime::Start();
-
-  CaptiveCounter.Control->EventIsOnUpbeat = false;
-  CaptiveCounter.Interrupts->OnEvent = true;
-}
-
-// Stop recording
-void TDigitalSignalRecorder::StopRecording()
-{
-  me_Counters::TCounter2 CaptiveCounter;
-
-  CaptiveCounter.Interrupts->OnEvent = false;
-  CaptiveCounter.Status->GotEventMark = true; // yep, cleared by one
-
-  me_RunTime::Stop();
-}
-
 // [Internal] Get address of element in our array
-TSignalSegment * GetSlotAddr(
+TSignalEvent * GetSlotAddr(
   TAddressSegment Span,
   TUint_2 Index
 )
@@ -72,14 +50,14 @@ TSignalSegment * GetSlotAddr(
   if (Index == 0)
     Index = 1;
 
-  SlotAddr = (Index - 1) * sizeof(TSignalSegment) + Span.Addr;
+  SlotAddr = (Index - 1) * sizeof(TSignalEvent) + Span.Addr;
 
-  return (TSignalSegment *) SlotAddr;
+  return (TSignalEvent *) SlotAddr;
 }
 
 // Return a copy of event data
 TBool TDigitalSignalRecorder::GetEvent(
-  TSignalSegment * Event,
+  TSignalEvent * Event,
   TUint_2 Index
 )
 {
@@ -93,11 +71,11 @@ TBool TDigitalSignalRecorder::GetEvent(
 
 // Set event data
 TBool TDigitalSignalRecorder::SetEvent(
-  TSignalSegment Event,
+  TSignalEvent Event,
   TUint_2 Index
 )
 {
-  TSignalSegment * EventSlotPtr;
+  TSignalEvent * EventSlotPtr;
 
   if (Index > NumEvents)
     return false;
@@ -111,7 +89,7 @@ TBool TDigitalSignalRecorder::SetEvent(
 
 // Add signal segment
 TBool TDigitalSignalRecorder::Add(
-  TSignalSegment SigSeg
+  TSignalEvent SigSeg
 )
 {
   if (!InitDone)
@@ -125,67 +103,31 @@ TBool TDigitalSignalRecorder::Add(
   return SetEvent(SigSeg, NumEvents);
 }
 
-// Replace time value with time difference from prev value
-void TDigitalSignalRecorder::Differentiate()
-{
-  TUint_2 Index;
-  TSignalSegment PrevEvent;
-  TSignalSegment CurEvent;
-  TSignalSegment CorrectedEvent;
-  TBool IsOk;
-
-  if (!InitDone)
-    return;
-
-  if (NumEvents < 2)
-    return;
-
-  Index = 2;
-
-  while (true)
-  {
-    GetEvent(&PrevEvent, Index - 1);
-    GetEvent(&CurEvent, Index);
-
-    IsOk =
-      Freetown::GetDurationSegment(
-        &CorrectedEvent, PrevEvent, CurEvent
-      );
-
-    if (!IsOk)
-      break;
-
-    SetEvent(CorrectedEvent, Index - 1);
-
-    if (Index == NumEvents)
-      break;
-
-    Index = Index + 1;
-  }
-
-  NumEvents = Index - 1;
-}
-
-// Save signals to some loadable format
-void TDigitalSignalRecorder::Save(
-  IOutputStream * OutputStream
-)
-{
-  if (!InitDone)
-    return;
-
-  for (TUint_2 Index = 1; Index <= NumEvents; ++Index)
-  {
-    TSignalSegment CurEvent;
-
-    GetEvent(&CurEvent, Index);
-
-    Freetown::SerializeSegment(CurEvent, OutputStream);
-  }
-}
-
 // Setting "extern" singleton
 TDigitalSignalRecorder me_DigitalSignalRecorder::DigitalSignalRecorder;
+
+// Start recording
+void me_DigitalSignalRecorder::StartRecording()
+{
+  me_Counters::TCounter2 CaptiveCounter;
+
+  me_RunTime::SetTime({ 0, 0, 0, 0 });
+  me_RunTime::Start();
+
+  CaptiveCounter.Control->EventIsOnUpbeat = false;
+  CaptiveCounter.Interrupts->OnEvent = true;
+}
+
+// Stop recording
+void me_DigitalSignalRecorder::StopRecording()
+{
+  me_Counters::TCounter2 CaptiveCounter;
+
+  CaptiveCounter.Interrupts->OnEvent = false;
+  CaptiveCounter.Status->GotEventMark = true; // yep, cleared by one
+
+  me_RunTime::Stop();
+}
 
 /*
   Timestamp saver (interrupt 10 - counter 2 capture event, pin 8)
@@ -199,7 +141,7 @@ void __vector_10()
     So in signal segment we're storing timestamp,
     not duration from last segment.
   */
-  TSignalSegment SigSeg;
+  TSignalEvent SigSeg;
   me_Counters::TCounter2 CaptiveCounter;
 
   SigSeg.IsOn = CaptiveCounter.Control->EventIsOnUpbeat;
@@ -208,9 +150,26 @@ void __vector_10()
   CaptiveCounter.Control->EventIsOnUpbeat =
     !CaptiveCounter.Control->EventIsOnUpbeat;
 
-  SigSeg.Duration = me_RunTime::GetTime();
+  SigSeg.Timestamp = me_RunTime::GetTime();
 
   DigitalSignalRecorder.Add(SigSeg);
+}
+
+// Save signals to some loadable format
+void me_DigitalSignalRecorder::Save(
+  TDigitalSignalRecorder * Recorder,
+  IOutputStream * OutputStream
+)
+{
+  TUint_2 Index;
+  TSignalEvent Event;
+
+  Index = 1;
+  while (Recorder->GetEvent(&Event, Index))
+  {
+    Freetown::SerializeEvent(Event, OutputStream);
+    Index = Index + 1;
+  }
 }
 
 /*
@@ -218,4 +177,5 @@ void __vector_10()
   2025-09-12
   2025-09-13
   2025-09-14
+  2025-09-15
 */
