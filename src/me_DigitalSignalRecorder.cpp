@@ -20,6 +20,7 @@
 #include <me_Timestamp.h>
 #include <me_Counters.h>
 #include <me_RunTime.h>
+#include <me_Pins.h>
 
 using namespace me_DigitalSignalRecorder;
 
@@ -109,7 +110,10 @@ TDigitalSignalRecorder me_DigitalSignalRecorder::DigitalSignalRecorder;
 // Start recording
 void me_DigitalSignalRecorder::StartRecording()
 {
+  me_Pins::TInputPin Pin8;
   me_Counters::TCounter2 CaptiveCounter;
+
+  Pin8.Init(8);
 
   me_RunTime::SetTime({ 0, 0, 0, 0 });
   me_RunTime::Start();
