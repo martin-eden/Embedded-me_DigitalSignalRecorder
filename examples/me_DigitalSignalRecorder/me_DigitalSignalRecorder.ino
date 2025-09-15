@@ -26,10 +26,10 @@ void TestRecorderClass()
 
   Recorder.Init(SignalsSpan);
 
-  Recorder.Add({true, { 0, 1, 0, 0 } });
-  Recorder.Add({false, { 0, 1, 9, 500 } });
-  Recorder.Add({true, { 0, 2, 0, 0 } });
-  Recorder.Add({false, { 0, 2, 9, 500 } });
+  Recorder.Add({false, { 0, 1, 0, 0 } });
+  Recorder.Add({true, { 0, 1, 9, 500 } });
+  Recorder.Add({false, { 0, 2, 0, 0 } });
+  Recorder.Add({true, { 0, 2, 9, 500 } });
 
   Console.Print("--");
   me_DigitalSignalRecorder::Save(&Recorder, Console.GetOutputStream());
