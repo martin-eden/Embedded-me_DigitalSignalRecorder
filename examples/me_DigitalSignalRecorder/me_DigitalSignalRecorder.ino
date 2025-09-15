@@ -5,12 +5,17 @@
   Last mod.: 2025-09-15
 */
 
+/*
+  This is internal test, not demo
+
+  For demo see [me_InfraredCloner] project.
+*/
+
 #include <me_DigitalSignalRecorder.h>
 
 #include <me_BaseTypes.h>
 #include <me_BaseInterfaces.h>
 #include <me_Console.h>
-#include <me_StreamsCollection.h>
 #include <me_DebugPrints.h>
 
 void TestRecorderClass()
