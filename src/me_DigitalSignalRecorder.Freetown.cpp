@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-09-15
+  Last mod.: 2025-09-19
 */
 
 #include <me_DigitalSignalRecorder.h>
@@ -43,6 +43,39 @@ void Freetown::SerializeEvent(
 }
 
 /*
+  Write sequence of signals to output stream
+*/
+void Freetown::SerializeEvents(
+  TDigitalSignalRecorder * Dsr,
+  IOutputStream * OutputStream
+)
+{
+  IOutputStream * OrigOutputStream;
+  TUint_2 Index;
+  TSignalEvent Event;
+
+  OrigOutputStream = Console.GetOutputStream();
+
+  Console.SetOutputStream(OutputStream);
+
+  Console.Print("(");
+  Console.Indent();
+
+  Index = 1;
+  while (Dsr->GetEvent(&Event, Index))
+  {
+    Freetown::SerializeEvent(Event, OutputStream);
+    Index = Index + 1;
+  }
+
+  Console.Unindent();
+  Console.Print(")");
+
+  Console.SetOutputStream(OrigOutputStream);
+}
+
+/*
   2025-09-13
   2025-09-14
+  2025-09-19
 */

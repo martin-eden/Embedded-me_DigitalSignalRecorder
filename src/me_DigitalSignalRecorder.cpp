@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-09-15
+  Last mod.: 2025-09-19
 */
 
 /*
@@ -165,15 +165,7 @@ void me_DigitalSignalRecorder::Save(
   IOutputStream * OutputStream
 )
 {
-  TUint_2 Index;
-  TSignalEvent Event;
-
-  Index = 1;
-  while (Recorder->GetEvent(&Event, Index))
-  {
-    Freetown::SerializeEvent(Event, OutputStream);
-    Index = Index + 1;
-  }
+  Freetown::SerializeEvents(Recorder, OutputStream);
 }
 
 /*
@@ -182,4 +174,5 @@ void me_DigitalSignalRecorder::Save(
   2025-09-13
   2025-09-14
   2025-09-15
+  2025-09-19
 */

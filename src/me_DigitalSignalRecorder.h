@@ -67,6 +67,7 @@ namespace me_DigitalSignalRecorder
   namespace Freetown
   {
     void SerializeEvent(TSignalEvent, IOutputStream *);
+    void SerializeEvents(TDigitalSignalRecorder *, IOutputStream *);
   }
 }
 
