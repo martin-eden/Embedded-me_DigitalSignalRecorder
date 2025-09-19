@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-09-15
+  Last mod.: 2025-09-19
 */
 
 /*
@@ -46,7 +46,9 @@ void setup()
   Console.Init();
 
   Console.Print("( [me_DigtialSignalRecorder] test");
+  Console.Indent();
   TestRecorderClass();
+  Console.Unindent();
   Console.Print(") Done");
 }
 
