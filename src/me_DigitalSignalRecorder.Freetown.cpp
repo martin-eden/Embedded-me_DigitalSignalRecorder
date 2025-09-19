@@ -36,7 +36,7 @@ void Freetown::SerializeEvent(
   Console.Write("(");
   Console.Print(SigSeg.IsOn);
   me_DebugPrints::PrintDuration(SigSeg.Timestamp);
-  Console.Write(" )");
+  Console.Write(")");
   Console.EndLine();
 
   Console.SetOutputStream(OrigOutputStream);
