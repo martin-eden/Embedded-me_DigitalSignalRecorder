@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-09-15
+  Last mod.: 2025-09-20
 */
 
 /*
@@ -20,14 +20,14 @@
 
 #include <me_BaseTypes.h>
 #include <me_BaseInterfaces.h>
-#include <me_Timestamp.h>
+#include <me_Duration.h>
 
 namespace me_DigitalSignalRecorder
 {
   struct TSignalEvent
   {
     TBool IsOn;
-    me_Timestamp::TTimestamp Timestamp;
+    me_Duration::TDuration Timestamp;
   };
 
   /*

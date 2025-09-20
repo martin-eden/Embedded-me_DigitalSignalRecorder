@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-09-19
+  Last mod.: 2025-09-20
 */
 
 /*
@@ -17,7 +17,7 @@
 #include <me_BaseTypes.h>
 #include <me_BaseInterfaces.h>
 
-#include <me_Timestamp.h>
+#include <me_Duration.h>
 #include <me_Counters.h>
 #include <me_RunTime.h>
 #include <me_Pins.h>
