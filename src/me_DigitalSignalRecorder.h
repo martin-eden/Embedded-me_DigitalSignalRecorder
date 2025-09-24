@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-09-20
+  Last mod.: 2025-09-24
 */
 
 /*
@@ -24,6 +24,9 @@
 
 namespace me_DigitalSignalRecorder
 {
+  /*
+    Signal event is on/off flag and timestamp
+  */
   struct TSignalEvent
   {
     TBool IsOn;
@@ -33,8 +36,8 @@ namespace me_DigitalSignalRecorder
   /*
     Signal recorder
 
-    Contract of this class is provide events with
-    _timestamp_, not with _duration_.
+    Contract of this class is provide events with _timestamp_,
+    not with _duration_.
   */
   class TDigitalSignalRecorder
   {
@@ -71,13 +74,12 @@ namespace me_DigitalSignalRecorder
   }
 }
 
-// Timestamp saver on signal change (vector 10 - counter 2 capture event)
-extern "C" void __vector_10() __attribute__((interrupt, used));
-
 /*
   2025 # # # # # # # #
   2025-09-12
   2025-09-13
   2025-09-14
   2025-09-15
+  2025-09-23
+  2025-09-24
 */
