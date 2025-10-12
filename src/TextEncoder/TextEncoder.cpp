@@ -18,17 +18,6 @@ using namespace me_DigitalSignalRecorder::TextEncoder::Freetown;
   Save signals to some loadable format
 */
 void me_DigitalSignalRecorder::TextEncoder::Save(
-  TDigitalSignalRecorder * Recorder,
-  IOutputStream * OutputStream
-)
-{
-  SerializeEvents(Recorder, OutputStream);
-}
-
-/*
-  Write sequence of signals to output stream
-*/
-void me_DigitalSignalRecorder::TextEncoder::Freetown::SerializeEvents(
   TDigitalSignalRecorder * Dsr,
   IOutputStream * OutputStream
 )
