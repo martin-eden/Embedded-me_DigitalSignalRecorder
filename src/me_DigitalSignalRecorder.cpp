@@ -174,15 +174,6 @@ void me_DigitalSignalRecorder::StopRecording()
   me_RunTime::Stop();
 }
 
-// Save signals to some loadable format
-void me_DigitalSignalRecorder::TextEncoder::Save(
-  TDigitalSignalRecorder * Recorder,
-  IOutputStream * OutputStream
-)
-{
-  Freetown::SerializeEvents(Recorder, OutputStream);
-}
-
 /*
   2025 # # # # # # # # # # # # # #
   2025-10-12
