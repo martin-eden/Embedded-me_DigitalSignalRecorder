@@ -39,14 +39,6 @@ void TDigitalSignalRecorder::Init(
   InitDone = true;
 }
 
-// Check index
-TBool TDigitalSignalRecorder::CheckIndex(
-  TUint_2 Index
-)
-{
-  return (Index >= 1) && (Index <= NumEvents);
-}
-
 // [Internal] Get address of element in our array
 TSignalEvent * GetSlotAddr(
   TAddressSegment Span,
@@ -63,6 +55,14 @@ TSignalEvent * GetSlotAddr(
   SlotAddr = (Index - 1) * sizeof(TSignalEvent) + Span.Addr;
 
   return (TSignalEvent *) SlotAddr;
+}
+
+// Check index
+TBool TDigitalSignalRecorder::CheckIndex(
+  TUint_2 Index
+)
+{
+  return (Index >= 1) && (Index <= NumEvents);
 }
 
 // Return a copy of event data

@@ -44,14 +44,12 @@ namespace me_DigitalSignalRecorder
   {
     public:
       void Init(TAddressSegment Span);
-
       TBool Add(TSignalEvent Event);
-
       TBool GetEvent(TSignalEvent * Event, TUint_2 Index);
-      TBool SetEvent(TSignalEvent Event, TUint_2 Index);
 
     protected:
       TBool CheckIndex(TUint_2 Index);
+      TBool SetEvent(TSignalEvent Event, TUint_2 Index);
 
     private:
       TBool InitDone = false;
