@@ -77,6 +77,11 @@ namespace me_DigitalSignalRecorder
     }
   }
 
+  namespace BinaryCodec
+  {
+    TBool Save(TDigitalSignalRecorder *, IOutputStream *);
+    TBool Load(TDigitalSignalRecorder *, IInputStream *);
+  }
 }
 
 /*
