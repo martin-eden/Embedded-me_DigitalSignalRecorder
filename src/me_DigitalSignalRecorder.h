@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-09-24
+  Last mod.: 2025-10-12
 */
 
 /*
@@ -11,9 +11,10 @@
   That's because we're using counter 2 which can fire interrupt
   on signal change.
 
-  We don't like this, we want to use interrupt which can
-  be attached to any digital pin. So this detail probably
-  will change later.
+  We want to use interrupt which can be attached to any digital pin.
+  But looks like it's impossible on ATmega328.
+  You can attach pin interrupt only to some pins.
+  Or attach interrupt when one of eight pins changes.
 */
 
 #pragma once
@@ -49,6 +50,9 @@ namespace me_DigitalSignalRecorder
       TBool GetEvent(TSignalEvent * Event, TUint_2 Index);
       TBool SetEvent(TSignalEvent Event, TUint_2 Index);
 
+    protected:
+      TBool CheckIndex(TUint_2 Index);
+
     private:
       TBool InitDone = false;
       TAddressSegment Span;
@@ -75,11 +79,6 @@ namespace me_DigitalSignalRecorder
 }
 
 /*
-  2025 # # # # # # # #
-  2025-09-12
-  2025-09-13
-  2025-09-14
-  2025-09-15
-  2025-09-23
-  2025-09-24
+  2025 # # # # # # # # # # # # # #
+  2025-10-12
 */

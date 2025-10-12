@@ -2,14 +2,14 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-09-23
+  Last mod.: 2025-10-12
 */
 
 /*
   We're dependent on hardware signal
 
-  Although there can be set of independent signal recorder instances
-  only special one will be called.
+  It means there is global class instance that will be called
+  from signal handler.
 */
 
 #include <me_DigitalSignalRecorder.h>
@@ -39,6 +39,14 @@ void TDigitalSignalRecorder::Init(
   InitDone = true;
 }
 
+// Check index
+TBool TDigitalSignalRecorder::CheckIndex(
+  TUint_2 Index
+)
+{
+  return (Index >= 1) && (Index <= NumEvents);
+}
+
 // [Internal] Get address of element in our array
 TSignalEvent * GetSlotAddr(
   TAddressSegment Span,
@@ -63,7 +71,7 @@ TBool TDigitalSignalRecorder::GetEvent(
   TUint_2 Index
 )
 {
-  if (Index > NumEvents)
+  if (!CheckIndex(Index))
     return false;
 
   *Event = *GetSlotAddr(Span, Index);
@@ -79,7 +87,7 @@ TBool TDigitalSignalRecorder::SetEvent(
 {
   TSignalEvent * EventSlotPtr;
 
-  if (Index > NumEvents)
+  if (!CheckIndex(Index))
     return false;
 
   EventSlotPtr = GetSlotAddr(Span, Index);
@@ -119,31 +127,29 @@ void OnEventCapture_I()
     We want to spend minimum time here because we cant handle
     new signal while we're not done.
 
-    So in signal segment we're storing timestamp,
-    not duration from last segment.
+    So we're storing timestamp, not duration from last segment.
   */
 
   TSignalEvent SigSeg;
   me_Counters::TCounter2 CaptiveCounter;
 
   SigSeg.IsOn = CaptiveCounter.Control->EventIsOnUpbeat;
+  SigSeg.Timestamp = me_RunTime::GetTime();
+
+  DigitalSignalRecorder.Add(SigSeg);
 
   // Trigger next capture at opposite side of signal edge
   CaptiveCounter.Control->EventIsOnUpbeat =
     !CaptiveCounter.Control->EventIsOnUpbeat;
-
-  SigSeg.Timestamp = me_RunTime::GetTime();
-
-  DigitalSignalRecorder.Add(SigSeg);
 }
 
 // Start recording
 void me_DigitalSignalRecorder::StartRecording()
 {
-  me_Pins::TInputPin Pin8;
+  me_Pins::TInputPin InputPin8;
   me_Counters::TCounter2 CaptiveCounter;
 
-  Pin8.Init(8);
+  InputPin8.Init(8);
 
   me_RunTime::Init();
   me_RunTime::SetTime({ 0, 0, 0, 0 });
@@ -178,11 +184,6 @@ void me_DigitalSignalRecorder::Save(
 }
 
 /*
-  2025 # # # # # # # #
-  2025-09-12
-  2025-09-13
-  2025-09-14
-  2025-09-15
-  2025-09-19
-  2025-09-23
+  2025 # # # # # # # # # # # # # #
+  2025-10-12
 */
