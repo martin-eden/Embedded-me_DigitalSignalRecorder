@@ -175,7 +175,7 @@ void me_DigitalSignalRecorder::StopRecording()
 }
 
 // Save signals to some loadable format
-void me_DigitalSignalRecorder::Save(
+void me_DigitalSignalRecorder::TextEncoder::Save(
   TDigitalSignalRecorder * Recorder,
   IOutputStream * OutputStream
 )

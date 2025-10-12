@@ -66,8 +66,11 @@ namespace me_DigitalSignalRecorder
   void StopRecording();
   // )
 
-  // Serializer of signal recorder data
-  void Save(TDigitalSignalRecorder *, IOutputStream *);
+  namespace TextEncoder
+  {
+    // Serializer of signal recorder data
+    void Save(TDigitalSignalRecorder *, IOutputStream *);
+  }
 
   namespace Freetown
   {
