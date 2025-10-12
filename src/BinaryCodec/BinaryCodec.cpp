@@ -21,6 +21,7 @@
 #include <me_DigitalSignalRecorder.h>
 
 #include <me_BaseTypes.h>
+#include <me_BaseInterfaces.h>
 #include <me_StreamTools.h>
 #include <me_StreamsCollection.h>
 
