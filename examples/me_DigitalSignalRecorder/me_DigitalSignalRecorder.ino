@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-09-19
+  Last mod.: 2025-10-12
 */
 
 /*
@@ -37,7 +37,8 @@ void TestRecorderClass()
   Recorder.Add({true, { 0, 2, 9, 500 } });
 
   Console.Print("--");
-  me_DigitalSignalRecorder::Save(&Recorder, Console.GetOutputStream());
+  me_DigitalSignalRecorder::TextEncoder::
+    Save(&Recorder, Console.GetOutputStream());
   Console.Print("--");
 }
 
