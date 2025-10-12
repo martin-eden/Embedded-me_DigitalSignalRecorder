@@ -71,6 +71,9 @@ TBool TDigitalSignalRecorder::GetEvent(
   TUint_2 Index
 )
 {
+  if (!InitDone)
+    return false;
+
   if (!CheckIndex(Index))
     return false;
 
