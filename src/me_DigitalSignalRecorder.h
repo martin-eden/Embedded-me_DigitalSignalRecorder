@@ -44,6 +44,7 @@ namespace me_DigitalSignalRecorder
   {
     public:
       void Init(TAddressSegment Span);
+      void Clear();
       TBool Add(TSignalEvent Event);
       TBool GetEvent(TSignalEvent * Event, TUint_2 Index);
       TBool GetNumEvents(TUint_2 * NumEvents);
@@ -81,7 +82,7 @@ namespace me_DigitalSignalRecorder
   namespace BinaryCodec
   {
     TBool Save(TDigitalSignalRecorder *, IOutputStream *);
-    TBool Load(TDigitalSignalRecorder *, IInputStream *);
+    TBool Load(IInputStream *, TDigitalSignalRecorder *);
   }
 }
 

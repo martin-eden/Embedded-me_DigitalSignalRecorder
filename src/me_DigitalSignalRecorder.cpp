@@ -31,12 +31,15 @@ void TDigitalSignalRecorder::Init(
 )
 {
   this->Span = Span;
-
-  NumEvents = 0;
-
   NumEvents_Max = Span.Size / sizeof(TSignalEvent);
-
+  Clear();
   InitDone = true;
+}
+
+// Nullify number of stored events
+void TDigitalSignalRecorder::Clear()
+{
+  NumEvents = 0;
 }
 
 // [Internal] Get address of element in our array

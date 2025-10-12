@@ -58,8 +58,6 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Save(
 
     if (!me_StreamTools::CopyStreamTo(&SourceDataStream, OutputStream))
       return false;
-
-    EventIndex = EventIndex + 1;
   }
 
   return true;
@@ -67,29 +65,38 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Save(
 
 // Load signals in binary format from stream
 TBool me_DigitalSignalRecorder::BinaryCodec::Load(
-  TDigitalSignalRecorder * Dsr,
-  IInputStream * InputStream
+  IInputStream * RawInputStream,
+  TDigitalSignalRecorder * Dsr
 )
 {
+  me_StreamTools::TVomitableInputStream InputStream;
   TUint_2 NumEvents;
   TAddressSegment DataAddrseg;
   me_StreamsCollection::TWorkmemOutputStream DestDataStream;
   TUint_2 EventIndex;
   TSignalEvent Event;
 
+  InputStream.Init(RawInputStream);
+
+  Dsr->Clear();
+
   DataAddrseg = { (TAddress) &NumEvents, sizeof(NumEvents) };
   DestDataStream.Init(DataAddrseg);
 
-  if (!me_StreamTools::CopyStreamTo(InputStream, &DestDataStream))
+  if (!me_StreamTools::LoadStreamFrom(&DestDataStream, &InputStream))
     return false;
+
+  InputStream.Vomit();
 
   for (EventIndex = 1; EventIndex <= NumEvents; ++EventIndex)
   {
     DataAddrseg = { (TAddress) &Event, sizeof(Event) };
     DestDataStream.Init(DataAddrseg);
 
-    if (!me_StreamTools::CopyStreamTo(InputStream, &DestDataStream))
+    if (!me_StreamTools::LoadStreamFrom(&DestDataStream, &InputStream))
       return false;
+
+    InputStream.Vomit();
 
     if (!Dsr->Add(Event))
       return false;
