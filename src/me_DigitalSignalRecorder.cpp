@@ -116,6 +116,19 @@ TBool TDigitalSignalRecorder::Add(
   return SetEvent(SigSeg, NumEvents);
 }
 
+// Get number of stored events. Used by binary codec
+TBool TDigitalSignalRecorder::GetNumEvents(
+  TUint_2 * NumEvents
+)
+{
+  if (!InitDone)
+    return false;
+
+  *NumEvents = this->NumEvents;
+
+  return true;
+}
+
 // Setting "extern" singleton
 TDigitalSignalRecorder me_DigitalSignalRecorder::DigitalSignalRecorder;
 

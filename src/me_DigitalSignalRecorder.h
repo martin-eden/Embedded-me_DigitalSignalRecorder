@@ -46,6 +46,7 @@ namespace me_DigitalSignalRecorder
       void Init(TAddressSegment Span);
       TBool Add(TSignalEvent Event);
       TBool GetEvent(TSignalEvent * Event, TUint_2 Index);
+      TBool GetNumEvents(TUint_2 * NumEvents);
 
     protected:
       TBool CheckIndex(TUint_2 Index);
