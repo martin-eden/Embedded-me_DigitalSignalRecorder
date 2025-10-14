@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-10-12
+  Last mod.: 2025-10-14
 */
 
 /*
@@ -69,7 +69,7 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Load(
   TDigitalSignalRecorder * Dsr
 )
 {
-  me_StreamTools::TVomitableInputStream InputStream;
+  TInputStream InputStream;
   TUint_2 NumEvents;
   TAddressSegment DataAddrseg;
   me_StreamsCollection::TWorkmemOutputStream DestDataStream;
@@ -86,8 +86,6 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Load(
   if (!me_StreamTools::LoadStreamFrom(&DestDataStream, &InputStream))
     return false;
 
-  InputStream.Vomit();
-
   for (EventIndex = 1; EventIndex <= NumEvents; ++EventIndex)
   {
     DataAddrseg = { (TAddress) &Event, sizeof(Event) };
@@ -95,8 +93,6 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Load(
 
     if (!me_StreamTools::LoadStreamFrom(&DestDataStream, &InputStream))
       return false;
-
-    InputStream.Vomit();
 
     if (!Dsr->Add(Event))
       return false;
