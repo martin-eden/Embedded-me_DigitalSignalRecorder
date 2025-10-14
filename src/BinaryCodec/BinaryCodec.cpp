@@ -45,7 +45,7 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Save(
   DataAddrseg = { (TAddress) &NumEvents, sizeof(NumEvents) };
   SourceDataStream.Init(DataAddrseg);
 
-  if (!me_StreamTools::CopyStreamTo(&SourceDataStream, OutputStream))
+  if (!me_StreamTools::SaveStreamTo(&SourceDataStream, OutputStream))
     return false;
 
   for (EventIndex = 1; EventIndex <= NumEvents; ++EventIndex)
@@ -56,7 +56,7 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Save(
     DataAddrseg = { (TAddress) &Event, sizeof(Event) };
     SourceDataStream.Init(DataAddrseg);
 
-    if (!me_StreamTools::CopyStreamTo(&SourceDataStream, OutputStream))
+    if (!me_StreamTools::SaveStreamTo(&SourceDataStream, OutputStream))
       return false;
   }
 
@@ -69,7 +69,7 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Load(
   TDigitalSignalRecorder * Dsr
 )
 {
-  TInputStream InputStream;
+  me_StreamTools::TRereadableInputStream InputStream;
   TUint_2 NumEvents;
   TAddressSegment DataAddrseg;
   me_StreamsCollection::TWorkmemOutputStream DestDataStream;
