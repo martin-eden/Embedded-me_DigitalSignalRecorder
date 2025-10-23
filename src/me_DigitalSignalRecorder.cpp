@@ -2,7 +2,13 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-10-12
+  Last mod.: 2025-10-23
+*/
+
+/*
+  Capturing pin is pin 8
+
+  That's counter 2 event capturing pin. It's fixed.
 */
 
 /*
@@ -22,8 +28,11 @@
 #include <me_RunTime.h>
 #include <me_Pins.h>
 #include <me_Interrupts.h>
+#include <me_HardwareClockScaling.h>
 
 using namespace me_DigitalSignalRecorder;
+
+static const TUint_4 Freq_Hz = 1000;
 
 // Setup margins according to provided memory segment
 void TDigitalSignalRecorder::Init(
@@ -43,7 +52,7 @@ void TDigitalSignalRecorder::Clear()
 }
 
 // [Internal] Get address of element in our array
-TSignalEvent * GetSlotAddr(
+static TSignalEvent * GetSlotAddr(
   TAddressSegment Span,
   TUint_2 Index
 )
@@ -135,11 +144,7 @@ TBool TDigitalSignalRecorder::GetNumEvents(
 // Setting "extern" singleton
 TDigitalSignalRecorder me_DigitalSignalRecorder::DigitalSignalRecorder;
 
-/*
-  [Interrupt handler] Process signal change
-
-  Bound to pin 8 (counter 2 capture event, interrupt 10).
-*/
+// [Interrupt handler] Process signal change
 void OnEventCapture_I()
 {
   /*
@@ -153,7 +158,7 @@ void OnEventCapture_I()
   me_Counters::TCounter2 CaptiveCounter;
 
   SigSeg.IsOn = CaptiveCounter.Control->EventIsOnUpbeat;
-  SigSeg.Timestamp = me_RunTime::GetTime();
+  SigSeg.Timestamp = me_RunTime::GetTime_Precise();
 
   DigitalSignalRecorder.Add(SigSeg);
 
@@ -165,21 +170,22 @@ void OnEventCapture_I()
 // Start recording
 void me_DigitalSignalRecorder::StartRecording()
 {
-  me_Pins::TInputPin InputPin8;
+  const TUint_1 EventPinNum = 8;
+
+  me_Pins::TInputPin EventPin;
   me_Counters::TCounter2 CaptiveCounter;
 
-  InputPin8.Init(8);
-
-  me_RunTime::Init();
-  me_RunTime::SetTime({ 0, 0, 0, 0 });
-  me_RunTime::Start();
+  EventPin.Init(EventPinNum);
 
   CaptiveCounter.Control->EventIsOnUpbeat = false;
 
   me_Interrupts::On_Counter2_CapturedEvent = OnEventCapture_I;
-
-  CaptiveCounter.Status->GotEventMark = true;
+  CaptiveCounter.Status->GotEventMark = true; // cleared by one
   CaptiveCounter.Interrupts->OnEvent = true;
+
+  me_RunTime::Init();
+  me_RunTime::SetTime({ 0, 0, 0, 0 });
+  me_RunTime::Start();
 }
 
 // Stop recording
@@ -188,7 +194,6 @@ void me_DigitalSignalRecorder::StopRecording()
   me_Counters::TCounter2 CaptiveCounter;
 
   CaptiveCounter.Interrupts->OnEvent = false;
-  CaptiveCounter.Status->GotEventMark = true; // yep, cleared by one
 
   me_RunTime::Stop();
 }
@@ -196,4 +201,5 @@ void me_DigitalSignalRecorder::StopRecording()
 /*
   2025 # # # # # # # # # # # # # #
   2025-10-12
+  2025-10-23
 */
