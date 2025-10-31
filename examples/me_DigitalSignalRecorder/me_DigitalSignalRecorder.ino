@@ -31,10 +31,10 @@ void TestRecorderClass()
 
   Recorder.Init(SignalsSpan);
 
-  Recorder.Add( { true, { 0, 1, 0, 0 } } );
-  Recorder.Add( { false, { 0, 1, 9, 500 } } );
-  Recorder.Add( { true, { 0, 1, 10, 0 } } );
-  Recorder.Add( { false, { 0, 1, 11, 500 } } );
+  Recorder.AddEvent( { true, { 0, 1, 0, 0 } } );
+  Recorder.AddEvent( { false, { 0, 1, 9, 500 } } );
+  Recorder.AddEvent( { true, { 0, 1, 10, 0 } } );
+  Recorder.AddEvent( { false, { 0, 1, 11, 500 } } );
 
   Console.Print("--");
   me_DigitalSignalRecorder::TextEncoder::
