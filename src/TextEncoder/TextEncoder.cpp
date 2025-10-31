@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-10-12
+  Last mod.: 2025-10-31
 */
 
 #include <me_DigitalSignalRecorder.h>
@@ -24,7 +24,7 @@ void me_DigitalSignalRecorder::TextEncoder::Save(
 {
   IOutputStream * OrigOutputStream;
   TUint_2 Index;
-  TSignalEvent Event;
+  TSignal Signal;
 
   OrigOutputStream = Console.GetOutputStream();
 
@@ -34,9 +34,9 @@ void me_DigitalSignalRecorder::TextEncoder::Save(
   Console.Indent();
 
   Index = 1;
-  while (Dsr->GetEvent(&Event, Index))
+  while (Dsr->GetSignal(&Signal, Index))
   {
-    SerializeEvent(Event, OutputStream);
+    SerializeSignal(Signal, OutputStream);
     Index = Index + 1;
   }
 
@@ -47,10 +47,10 @@ void me_DigitalSignalRecorder::TextEncoder::Save(
 }
 
 /*
-  Write signal event to output stream in some convenient format
+  Write signal to output stream in some convenient format
 */
-void me_DigitalSignalRecorder::TextEncoder::Freetown::SerializeEvent(
-  TSignalEvent SigSeg,
+void me_DigitalSignalRecorder::TextEncoder::Freetown::SerializeSignal(
+  TSignal Signal,
   IOutputStream * OutputStream
 )
 {
@@ -66,8 +66,8 @@ void me_DigitalSignalRecorder::TextEncoder::Freetown::SerializeEvent(
   Console.SetOutputStream(OutputStream);
 
   Console.Write("(");
-  Console.Print(SigSeg.IsOn);
-  me_DebugPrints::PrintDuration(SigSeg.Timestamp);
+  Console.Print(Signal.IsOn);
+  me_DebugPrints::PrintDuration(Signal.Duration);
   Console.Write(")");
   Console.EndLine();
 

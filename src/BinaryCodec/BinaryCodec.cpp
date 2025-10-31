@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-10-14
+  Last mod.: 2025-10-31
 */
 
 /*
@@ -33,27 +33,27 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Save(
   IOutputStream * OutputStream
 )
 {
-  TUint_2 NumEvents;
+  TUint_2 NumSignals;
   TAddressSegment DataAddrseg;
   me_StreamsCollection::TWorkmemInputStream SourceDataStream;
-  TUint_2 EventIndex;
-  TSignalEvent Event;
+  TUint_2 SignalIndex;
+  TSignal Signal;
 
-  if (!Dsr->GetNumEvents(&NumEvents))
+  if (!Dsr->GetNumSignals(&NumSignals))
     return false;
 
-  DataAddrseg = { (TAddress) &NumEvents, sizeof(NumEvents) };
+  DataAddrseg = { (TAddress) &NumSignals, sizeof(NumSignals) };
   SourceDataStream.Init(DataAddrseg);
 
   if (!me_StreamTools::SaveStreamTo(&SourceDataStream, OutputStream))
     return false;
 
-  for (EventIndex = 1; EventIndex <= NumEvents; ++EventIndex)
+  for (SignalIndex = 1; SignalIndex <= NumSignals; ++SignalIndex)
   {
-    if (!Dsr->GetEvent(&Event, EventIndex))
+    if (!Dsr->GetSignal(&Signal, SignalIndex))
       return false;
 
-    DataAddrseg = { (TAddress) &Event, sizeof(Event) };
+    DataAddrseg = { (TAddress) &Signal, sizeof(Signal) };
     SourceDataStream.Init(DataAddrseg);
 
     if (!me_StreamTools::SaveStreamTo(&SourceDataStream, OutputStream))
