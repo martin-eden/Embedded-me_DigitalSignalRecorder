@@ -53,7 +53,7 @@ namespace me_DigitalSignalRecorder
       void Clear();
       TBool Add(TSignalEvent Event);
       TBool GetSignal(TSignal * Signal, TUint_2 Index);
-      TBool GetNumSignals(TUint_2 * NumSignals);
+      TUint_2 GetNumSignals();
 
     protected:
       TBool CheckIndex(TUint_2 Index);

@@ -141,13 +141,9 @@ TBool TDigitalSignalRecorder::Add(
 }
 
 // Get number of stored signals. Used by binary codec
-TBool TDigitalSignalRecorder::GetNumSignals(
-  TUint_2 * NumSignals
-)
+TUint_2 TDigitalSignalRecorder::GetNumSignals()
 {
-  *NumSignals = this->NumSignals;
-
-  return true;
+  return this->NumSignals;
 }
 
 // Setting "extern" singleton
