@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-10-12
+  Last mod.: 2025-10-31
 */
 
 /*
@@ -10,11 +10,6 @@
 
   That's because we're using counter 2 which can fire interrupt
   on signal change.
-
-  We want to use interrupt which can be attached to any digital pin.
-  But looks like it's impossible on ATmega328.
-  You can attach pin interrupt only to some pins.
-  Or attach interrupt when one of eight pins changes.
 */
 
 #pragma once
@@ -35,10 +30,21 @@ namespace me_DigitalSignalRecorder
   };
 
   /*
+    Signal is on/off flag and duration
+  */
+  struct TSignal
+  {
+    TBool IsOn;
+    me_Duration::TDuration Duration;
+  };
+
+  /*
     Signal recorder
 
-    Contract of this class is provide events with _timestamp_,
-    not with _duration_.
+    You add signal events. It returns signal records.
+
+    Flushable container with signal records.
+    Requires external memory for storage.
   */
   class TDigitalSignalRecorder
   {
@@ -46,18 +52,19 @@ namespace me_DigitalSignalRecorder
       void Init(TAddressSegment Span);
       void Clear();
       TBool Add(TSignalEvent Event);
-      TBool GetEvent(TSignalEvent * Event, TUint_2 Index);
-      TBool GetNumEvents(TUint_2 * NumEvents);
+      TBool GetSignal(TSignal * Signal, TUint_2 Index);
+      TBool GetNumSignals(TUint_2 * NumSignals);
 
     protected:
       TBool CheckIndex(TUint_2 Index);
-      TBool SetEvent(TSignalEvent Event, TUint_2 Index);
+      TBool SetSignal(TSignal Signal, TUint_2 Index);
 
     private:
-      TBool InitDone = false;
       TAddressSegment Span;
-      TUint_2 NumEvents_Max;
-      TUint_2 NumEvents;
+      TUint_2 NumSignals_Max;
+      TUint_2 NumSignals;
+      TBool HasPrevEvent;
+      TSignalEvent PrevEvent;
   };
 
   // Singleton instance
@@ -75,7 +82,7 @@ namespace me_DigitalSignalRecorder
 
     namespace Freetown
     {
-      void SerializeEvent(TSignalEvent, IOutputStream *);
+      void SerializeSignal(TSignal, IOutputStream *);
     }
   }
 
@@ -89,4 +96,5 @@ namespace me_DigitalSignalRecorder
 /*
   2025 # # # # # # # # # # # # # #
   2025-10-12
+  2025-10-31
 */

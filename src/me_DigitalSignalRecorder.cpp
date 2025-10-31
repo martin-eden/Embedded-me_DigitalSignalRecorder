@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-10-23
+  Last mod.: 2025-10-31
 */
 
 /*
@@ -40,19 +40,20 @@ void TDigitalSignalRecorder::Init(
 )
 {
   this->Span = Span;
-  NumEvents_Max = Span.Size / sizeof(TSignalEvent);
+  NumSignals_Max = Span.Size / sizeof(TSignal);
+
   Clear();
-  InitDone = true;
 }
 
 // Nullify number of stored events
 void TDigitalSignalRecorder::Clear()
 {
-  NumEvents = 0;
+  NumSignals = 0;
+  HasPrevEvent = false;
 }
 
 // [Internal] Get address of element in our array
-static TSignalEvent * GetSlotAddr(
+static TSignal * GetSlotAddr(
   TAddressSegment Span,
   TUint_2 Index
 )
@@ -64,9 +65,9 @@ static TSignalEvent * GetSlotAddr(
   if (Index == 0)
     Index = 1;
 
-  SlotAddr = (Index - 1) * sizeof(TSignalEvent) + Span.Addr;
+  SlotAddr = (Index - 1) * sizeof(TSignal) + Span.Addr;
 
-  return (TSignalEvent *) SlotAddr;
+  return (TSignal *) SlotAddr;
 }
 
 // Check index
@@ -74,69 +75,77 @@ TBool TDigitalSignalRecorder::CheckIndex(
   TUint_2 Index
 )
 {
-  return (Index >= 1) && (Index <= NumEvents);
+  return (Index >= 1) && (Index <= NumSignals);
 }
 
-// Return a copy of event data
-TBool TDigitalSignalRecorder::GetEvent(
-  TSignalEvent * Event,
+// Return a copy of signal record
+TBool TDigitalSignalRecorder::GetSignal(
+  TSignal * Signal,
   TUint_2 Index
 )
 {
-  if (!InitDone)
-    return false;
-
   if (!CheckIndex(Index))
     return false;
 
-  *Event = *GetSlotAddr(Span, Index);
+  *Signal = *GetSlotAddr(Span, Index);
 
   return true;
 }
 
-// Set event data
-TBool TDigitalSignalRecorder::SetEvent(
-  TSignalEvent Event,
+// Set signal record
+TBool TDigitalSignalRecorder::SetSignal(
+  TSignal Signal,
   TUint_2 Index
 )
 {
-  TSignalEvent * EventSlotPtr;
+  TSignal * SignalSlotPtr;
 
   if (!CheckIndex(Index))
     return false;
 
-  EventSlotPtr = GetSlotAddr(Span, Index);
+  SignalSlotPtr = GetSlotAddr(Span, Index);
 
-  *EventSlotPtr = Event;
+  *SignalSlotPtr = Signal;
 
   return true;
 }
 
-// Add signal segment
+// Add signal. Receives signal _event_
 TBool TDigitalSignalRecorder::Add(
-  TSignalEvent SigSeg
+  TSignalEvent Event
 )
 {
-  if (!InitDone)
+  TSignal Signal;
+
+  if (NumSignals == NumSignals_Max)
     return false;
 
-  if (NumEvents == NumEvents_Max)
-    return false;
+  if (!HasPrevEvent)
+  {
+    PrevEvent = Event;
+    HasPrevEvent = true;
 
-  NumEvents = NumEvents + 1;
+    return true;
+  }
 
-  return SetEvent(SigSeg, NumEvents);
+  NumSignals = NumSignals + 1;
+
+  Signal.Duration = Event.Timestamp;
+  me_Duration::Subtract(&Signal.Duration, PrevEvent.Timestamp);
+
+  Signal.IsOn = PrevEvent.IsOn;
+
+  PrevEvent = Event;
+
+  return SetSignal(Signal, NumSignals);
 }
 
-// Get number of stored events. Used by binary codec
-TBool TDigitalSignalRecorder::GetNumEvents(
-  TUint_2 * NumEvents
+// Get number of stored signals. Used by binary codec
+TBool TDigitalSignalRecorder::GetNumSignals(
+  TUint_2 * NumSignals
 )
 {
-  if (!InitDone)
-    return false;
-
-  *NumEvents = this->NumEvents;
+  *NumSignals = this->NumSignals;
 
   return true;
 }
@@ -147,20 +156,13 @@ TDigitalSignalRecorder me_DigitalSignalRecorder::DigitalSignalRecorder;
 // [Interrupt handler] Process signal change
 void OnEventCapture_I()
 {
-  /*
-    We want to spend minimum time here because we cant handle
-    new signal while we're not done.
-
-    So we're storing timestamp, not duration from last segment.
-  */
-
-  TSignalEvent SigSeg;
+  TSignalEvent Event;
   me_Counters::TCounter2 CaptiveCounter;
 
-  SigSeg.IsOn = CaptiveCounter.Control->EventIsOnUpbeat;
-  SigSeg.Timestamp = me_RunTime::GetTime_Precise();
+  Event.IsOn = CaptiveCounter.Control->EventIsOnUpbeat;
+  Event.Timestamp = me_RunTime::GetTime_Precise();
 
-  DigitalSignalRecorder.Add(SigSeg);
+  DigitalSignalRecorder.Add(Event);
 
   // Trigger next capture at opposite side of signal edge
   CaptiveCounter.Control->EventIsOnUpbeat =
@@ -202,4 +204,5 @@ void me_DigitalSignalRecorder::StopRecording()
   2025 # # # # # # # # # # # # # #
   2025-10-12
   2025-10-23
+  2025-10-31
 */
