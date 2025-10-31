@@ -51,7 +51,8 @@ namespace me_DigitalSignalRecorder
     public:
       void Init(TAddressSegment Span);
       void Clear();
-      TBool Add(TSignalEvent Event);
+      TBool AddSignal(TSignal Signal);
+      TBool AddEvent(TSignalEvent Event);
       TBool GetSignal(TSignal * Signal, TUint_2 Index);
       TUint_2 GetNumSignals();
 

@@ -114,15 +114,25 @@ TBool TDigitalSignalRecorder::SetSignal(
   return true;
 }
 
-// Add signal. Receives signal _event_
-TBool TDigitalSignalRecorder::Add(
+// Adds signal. Used by binary loader
+TBool TDigitalSignalRecorder::AddSignal(
+  TSignal Signal
+)
+{
+  if (NumSignals == NumSignals_Max)
+    return false;
+
+  NumSignals = NumSignals + 1;
+
+  return SetSignal(Signal, NumSignals);
+}
+
+// Adds signal given _signal event_
+TBool TDigitalSignalRecorder::AddEvent(
   TSignalEvent Event
 )
 {
   TSignal Signal;
-
-  if (NumSignals == NumSignals_Max)
-    return false;
 
   if (!HasPrevEvent)
   {
@@ -132,8 +142,6 @@ TBool TDigitalSignalRecorder::Add(
     return true;
   }
 
-  NumSignals = NumSignals + 1;
-
   Signal.Duration = Event.Timestamp;
   me_Duration::Subtract(&Signal.Duration, PrevEvent.Timestamp);
 
@@ -141,7 +149,7 @@ TBool TDigitalSignalRecorder::Add(
 
   PrevEvent = Event;
 
-  return SetSignal(Signal, NumSignals);
+  return AddSignal(Signal);
 }
 
 // Get number of stored signals. Used by binary codec
@@ -162,7 +170,7 @@ void OnEventCapture_I()
   Event.IsOn = !CaptiveCounter.Control->EventIsOnUpbeat;
   Event.Timestamp = me_RunTime::GetTime_Precise();
 
-  DigitalSignalRecorder.Add(Event);
+  DigitalSignalRecorder.AddEvent(Event);
 
   // Trigger next capture at opposite side of signal edge
   CaptiveCounter.Control->EventIsOnUpbeat =
