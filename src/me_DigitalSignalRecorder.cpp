@@ -9,6 +9,10 @@
   Capturing pin is pin 8
 
   That's counter 2 event capturing pin. It's fixed.
+
+  In capturing event we're inverting signal from receiver.
+  That means we assume pin is PULLUP and LOW means that
+  we're receiving signal.
 */
 
 /*
@@ -155,7 +159,7 @@ void OnEventCapture_I()
   TSignalEvent Event;
   me_Counters::TCounter2 CaptiveCounter;
 
-  Event.IsOn = CaptiveCounter.Control->EventIsOnUpbeat;
+  Event.IsOn = !CaptiveCounter.Control->EventIsOnUpbeat;
   Event.Timestamp = me_RunTime::GetTime_Precise();
 
   DigitalSignalRecorder.Add(Event);
