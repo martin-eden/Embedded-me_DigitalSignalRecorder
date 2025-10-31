@@ -39,8 +39,7 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Save(
   TUint_2 SignalIndex;
   TSignal Signal;
 
-  if (!Dsr->GetNumSignals(&NumSignals))
-    return false;
+  NumSignals = Dsr->GetNumSignals();
 
   DataAddrseg = { (TAddress) &NumSignals, sizeof(NumSignals) };
   SourceDataStream.Init(DataAddrseg);
