@@ -69,31 +69,31 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Load(
 )
 {
   me_StreamTools::TRereadableInputStream InputStream;
-  TUint_2 NumEvents;
+  TUint_2 NumSignals;
   TAddressSegment DataAddrseg;
   me_StreamsCollection::TWorkmemOutputStream DestDataStream;
-  TUint_2 EventIndex;
-  TSignalEvent Event;
+  TUint_2 SignalIndex;
+  TSignal Signal;
 
   InputStream.Init(RawInputStream);
 
   Dsr->Clear();
 
-  DataAddrseg = { (TAddress) &NumEvents, sizeof(NumEvents) };
+  DataAddrseg = { (TAddress) &NumSignals, sizeof(NumSignals) };
   DestDataStream.Init(DataAddrseg);
 
   if (!me_StreamTools::LoadStreamFrom(&DestDataStream, &InputStream))
     return false;
 
-  for (EventIndex = 1; EventIndex <= NumEvents; ++EventIndex)
+  for (SignalIndex = 1; SignalIndex <= NumSignals; ++SignalIndex)
   {
-    DataAddrseg = { (TAddress) &Event, sizeof(Event) };
+    DataAddrseg = { (TAddress) &Signal, sizeof(Signal) };
     DestDataStream.Init(DataAddrseg);
 
     if (!me_StreamTools::LoadStreamFrom(&DestDataStream, &InputStream))
       return false;
 
-    if (!Dsr->Add(Event))
+    if (!Dsr->AddSignal(Signal))
       return false;
   }
 
