@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-10-12
+  Last mod.: 2025-10-31
 */
 
 /*
@@ -20,7 +20,7 @@
 
 void TestRecorderClass()
 {
-  const TUint_1 NumSignals_Max = 4;
+  const TUint_1 NumSignals_Max = 3;
   me_DigitalSignalRecorder::TSignalEvent Signals[NumSignals_Max];
   TAddressSegment SignalsSpan;
   me_DigitalSignalRecorder::TDigitalSignalRecorder Recorder;
@@ -31,10 +31,10 @@ void TestRecorderClass()
 
   Recorder.Init(SignalsSpan);
 
-  Recorder.Add({false, { 0, 1, 0, 0 } });
-  Recorder.Add({true, { 0, 1, 9, 500 } });
-  Recorder.Add({false, { 0, 2, 0, 0 } });
-  Recorder.Add({true, { 0, 2, 9, 500 } });
+  Recorder.Add( { true, { 0, 1, 0, 0 } } );
+  Recorder.Add( { false, { 0, 1, 9, 500 } } );
+  Recorder.Add( { true, { 0, 1, 10, 0 } } );
+  Recorder.Add( { false, { 0, 1, 11, 500 } } );
 
   Console.Print("--");
   me_DigitalSignalRecorder::TextEncoder::
