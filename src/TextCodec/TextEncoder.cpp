@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-10-31
+  Last mod.: 2025-11-09
 */
 
 #include <me_DigitalSignalRecorder.h>
@@ -12,12 +12,12 @@
 #include <me_Console.h>
 #include <me_DebugPrints.h>
 
-using namespace me_DigitalSignalRecorder::TextEncoder::Freetown;
+using namespace me_DigitalSignalRecorder::TextCodec::Freetown;
 
 /*
   Save signals to some loadable format
 */
-void me_DigitalSignalRecorder::TextEncoder::Save(
+void me_DigitalSignalRecorder::TextCodec::Save(
   TDigitalSignalRecorder * Dsr,
   IOutputStream * OutputStream
 )
@@ -49,7 +49,7 @@ void me_DigitalSignalRecorder::TextEncoder::Save(
 /*
   Write signal to output stream in some convenient format
 */
-void me_DigitalSignalRecorder::TextEncoder::Freetown::SerializeSignal(
+void me_DigitalSignalRecorder::TextCodec::Freetown::SerializeSignal(
   TSignal Signal,
   IOutputStream * OutputStream
 )

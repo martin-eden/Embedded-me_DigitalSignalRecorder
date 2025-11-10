@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-10-31
+  Last mod.: 2025-11-09
 */
 
 /*
@@ -41,7 +41,8 @@ namespace me_DigitalSignalRecorder
   /*
     Signal recorder
 
-    You add signal events. It returns signal records.
+    You add signal events (timestamps). Or signals (durations).
+    It returns signals.
 
     Flushable container with signal records.
     Requires external memory for storage.
@@ -76,10 +77,10 @@ namespace me_DigitalSignalRecorder
   void StopRecording();
   // )
 
-  namespace TextEncoder
+  namespace TextCodec
   {
-    // Serialize signal recorder's data
     void Save(TDigitalSignalRecorder *, IOutputStream *);
+    TBool Load(IInputStream *, TDigitalSignalRecorder *);
 
     namespace Freetown
     {
@@ -95,7 +96,6 @@ namespace me_DigitalSignalRecorder
 }
 
 /*
-  2025 # # # # # # # # # # # # # #
-  2025-10-12
-  2025-10-31
+  2025 # # # # # # # # # # # # # # # #
+  2025-11-09
 */
