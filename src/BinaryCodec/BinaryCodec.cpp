@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-10-31
+  Last mod.: 2025-11-10
 */
 
 /*
@@ -64,8 +64,8 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Save(
 
 // Load signals in binary format from stream
 TBool me_DigitalSignalRecorder::BinaryCodec::Load(
-  IInputStream * RawInputStream,
-  TDigitalSignalRecorder * Dsr
+  TDigitalSignalRecorder * Dsr,
+  IInputStream * RawInputStream
 )
 {
   me_StreamTools::TRereadableInputStream InputStream;
