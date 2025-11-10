@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-10-31
+  Last mod.: 2025-11-10
 */
 
 /*
@@ -32,11 +32,8 @@
 #include <me_RunTime.h>
 #include <me_Pins.h>
 #include <me_Interrupts.h>
-#include <me_HardwareClockScaling.h>
 
 using namespace me_DigitalSignalRecorder;
-
-static const TUint_4 Freq_Hz = 1000;
 
 // Setup margins according to provided memory segment
 void TDigitalSignalRecorder::Init(
