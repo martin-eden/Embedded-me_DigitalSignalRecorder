@@ -80,18 +80,13 @@ namespace me_DigitalSignalRecorder
   namespace TextCodec
   {
     void Save(TDigitalSignalRecorder *, IOutputStream *);
-    TBool Load(IInputStream *, TDigitalSignalRecorder *);
-
-    namespace Freetown
-    {
-      void SerializeSignal(TSignal, IOutputStream *);
-    }
+    TBool Load(TDigitalSignalRecorder *, IInputStream *);
   }
 
   namespace BinaryCodec
   {
     TBool Save(TDigitalSignalRecorder *, IOutputStream *);
-    TBool Load(IInputStream *, TDigitalSignalRecorder *);
+    TBool Load(TDigitalSignalRecorder *, IInputStream *);
   }
 }
 
