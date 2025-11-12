@@ -2,32 +2,30 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-10
+  Last mod.: 2025-11-12
 */
 
 #include <me_DigitalSignalRecorder.h>
 
 #include <me_BaseTypes.h>
 #include <me_BaseInterfaces.h>
-#include <me_BooleansCodec.h>
-#include <me_ReadInteger.h>
+#include <me_Console.h>
 
 using namespace me_DigitalSignalRecorder;
 
 static TBool ParseDuration(
-  me_Duration::TDuration * Duration,
-  IInputStream * InputStream
+  me_Duration::TDuration * Duration
 )
 {
   TUint_2 KiloS, S, MilliS, MicroS;
 
-  if (!me_ReadInteger::Read_TUint_2(&KiloS, InputStream))
+  if (!Console.Read(&KiloS))
     return false;
-  if (!me_ReadInteger::Read_TUint_2(&S, InputStream))
+  if (!Console.Read(&S))
     return false;
-  if (!me_ReadInteger::Read_TUint_2(&MilliS, InputStream))
+  if (!Console.Read(&MilliS))
     return false;
-  if (!me_ReadInteger::Read_TUint_2(&MicroS, InputStream))
+  if (!Console.Read(&MicroS))
     return false;
 
   Duration->KiloS = KiloS;
@@ -39,14 +37,13 @@ static TBool ParseDuration(
 }
 
 static TBool ParseSignal(
-  TSignal * Signal,
-  IInputStream * InputStream
+  TSignal * Signal
 )
 {
-  if (!me_BooleansCodec::Read(&Signal->IsOn, InputStream))
+  if (!Console.Read(&Signal->IsOn))
     return false;
 
-  if (!ParseDuration(&Signal->Duration, InputStream))
+  if (!ParseDuration(&Signal->Duration))
     return false;
 
   return true;
@@ -56,8 +53,7 @@ static TBool ParseSignal(
   Load saved signals
 */
 TBool me_DigitalSignalRecorder::TextCodec::Load(
-  TDigitalSignalRecorder * Dsr,
-  IInputStream * InputStream
+  TDigitalSignalRecorder * Dsr
 )
 {
   /*
@@ -72,12 +68,12 @@ TBool me_DigitalSignalRecorder::TextCodec::Load(
   TUint_2 Index;
   TSignal Signal;
 
-  if (!me_ReadInteger::Read_TUint_2(&NumSignals, InputStream))
+  if (!Console.Read(&NumSignals))
     return false;
 
   for (Index = 1; Index <= NumSignals; ++Index)
   {
-    if (!ParseSignal(&Signal, InputStream))
+    if (!ParseSignal(&Signal))
       return false;
 
     Dsr->AddSignal(Signal);
@@ -89,4 +85,5 @@ TBool me_DigitalSignalRecorder::TextCodec::Load(
 /*
   2025-11-09
   2025-11-10
+  2025-11-12
 */

@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-09
+  Last mod.: 2025-11-12
 */
 
 /*
@@ -77,12 +77,14 @@ namespace me_DigitalSignalRecorder
   void StopRecording();
   // )
 
+  // Text codec writes to Console
   namespace TextCodec
   {
-    void Save(TDigitalSignalRecorder *, IOutputStream *);
-    TBool Load(TDigitalSignalRecorder *, IInputStream *);
+    void Save(TDigitalSignalRecorder *);
+    TBool Load(TDigitalSignalRecorder *);
   }
 
+  // Binary codec writes to stream
   namespace BinaryCodec
   {
     TBool Save(TDigitalSignalRecorder *, IOutputStream *);
@@ -93,4 +95,5 @@ namespace me_DigitalSignalRecorder
 /*
   2025 # # # # # # # # # # # # # # # #
   2025-11-09
+  2025-11-12
 */

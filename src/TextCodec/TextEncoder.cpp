@@ -2,15 +2,14 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-10
+  Last mod.: 2025-11-12
 */
 
 #include <me_DigitalSignalRecorder.h>
 
 #include <me_BaseTypes.h>
 #include <me_BaseInterfaces.h>
-#include <me_BooleansCodec.h>
-#include <me_WriteInteger.h>
+#include <me_Console.h>
 
 using namespace me_DigitalSignalRecorder;
 
@@ -30,55 +29,32 @@ using namespace me_DigitalSignalRecorder;
     NO 0 0 0 340
 */
 
-// Emit newline
-static void EndLine(
-  IOutputStream * OutputStream
-)
-{
-  OutputStream->Write('\n');
-}
-
-// Emit space
-static void Space(
-  IOutputStream * OutputStream
-)
-{
-  OutputStream->Write(' ');
-}
-
-// Write duration to output stream
+// Write duration to console
 static void SerializeDuration(
-  me_Duration::TDuration Duration,
-  IOutputStream * OutputStream
+  me_Duration::TDuration Duration
 )
 {
-  me_WriteInteger::Write_U2(Duration.KiloS, OutputStream);
-  Space(OutputStream);
-  me_WriteInteger::Write_U2(Duration.S, OutputStream);
-  Space(OutputStream);
-  me_WriteInteger::Write_U2(Duration.MilliS, OutputStream);
-  Space(OutputStream);
-  me_WriteInteger::Write_U2(Duration.MicroS, OutputStream);
+  Console.Print(Duration.KiloS);
+  Console.Print(Duration.S);
+  Console.Print(Duration.MilliS);
+  Console.Print(Duration.MicroS);
 }
 
-// Write signal to output stream
+// Write signal to console
 static void SerializeSignal(
-  TSignal Signal,
-  IOutputStream * OutputStream
+  TSignal Signal
 )
 {
-  me_BooleansCodec::Write(Signal.IsOn, OutputStream);
-  Space(OutputStream);
-  SerializeDuration(Signal.Duration, OutputStream);
-  EndLine(OutputStream);
+  Console.Print(Signal.IsOn);
+  SerializeDuration(Signal.Duration);
+  Console.EndLine();
 }
 
 /*
   Save signals to some loadable format
 */
 void me_DigitalSignalRecorder::TextCodec::Save(
-  TDigitalSignalRecorder * Dsr,
-  IOutputStream * OutputStream
+  TDigitalSignalRecorder * Dsr
 )
 {
   TUint_2 NumSignals;
@@ -87,14 +63,14 @@ void me_DigitalSignalRecorder::TextCodec::Save(
 
   NumSignals = Dsr->GetNumSignals();
 
-  me_WriteInteger::Write_U2(NumSignals, OutputStream);
-  EndLine(OutputStream);
+  Console.Print(NumSignals);
+  Console.EndLine();
 
   for (Index = 1; Index <= NumSignals; ++Index)
   {
     Dsr->GetSignal(&Signal, Index);
 
-    SerializeSignal(Signal, OutputStream);
+    SerializeSignal(Signal);
   }
 }
 
@@ -102,4 +78,5 @@ void me_DigitalSignalRecorder::TextCodec::Save(
   2025 # # #
   2025-10-12
   2025-11-10
+  2025-11-12
 */
