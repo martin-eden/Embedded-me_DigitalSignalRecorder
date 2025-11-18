@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-10
+  Last mod.: 2025-11-18
 */
 
 /*
@@ -189,10 +189,6 @@ void me_DigitalSignalRecorder::StartRecording()
   me_Interrupts::On_Counter2_CapturedEvent = OnEventCapture_I;
   CaptiveCounter.Status->GotEventMark = true; // cleared by one
   CaptiveCounter.Interrupts->OnEvent = true;
-
-  me_RunTime::Init();
-  me_RunTime::SetTime({ 0, 0, 0, 0 });
-  me_RunTime::Start();
 }
 
 // Stop recording
@@ -201,8 +197,6 @@ void me_DigitalSignalRecorder::StopRecording()
   me_Counters::TCounter2 CaptiveCounter;
 
   CaptiveCounter.Interrupts->OnEvent = false;
-
-  me_RunTime::Stop();
 }
 
 /*
@@ -210,4 +204,5 @@ void me_DigitalSignalRecorder::StopRecording()
   2025-10-12
   2025-10-23
   2025-10-31
+  2025-11-18
 */
