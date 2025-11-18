@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-10
+  Last mod.: 2025-11-18
 */
 
 /*
@@ -12,10 +12,10 @@
 /*
   Data structure
 
-  We're using binary representations.
+    <NumEvents>
+    <TDuration>... * NumEvents
 
-    <NumEvents: TUint_2>
-    (<TDuration>) * <NumEvents>
+  We're using binary representations.
 */
 
 #include <me_DigitalSignalRecorder.h>
@@ -34,16 +34,13 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Save(
 )
 {
   TUint_2 NumSignals;
-  TAddressSegment DataAddrseg;
-  me_StreamsCollection::TWorkmemInputStream SourceDataStream;
   TUint_2 SignalIndex;
   TSignal Signal;
+  me_StreamsCollection::TWorkmemInputStream SourceDataStream;
 
   NumSignals = Dsr->GetNumSignals();
 
-  DataAddrseg = { (TAddress) &NumSignals, sizeof(NumSignals) };
-  SourceDataStream.Init(DataAddrseg);
-
+  SourceDataStream.Init(AsAddrSeg_M(NumSignals));
   if (!me_StreamTools::SaveStreamTo(&SourceDataStream, OutputStream))
     return false;
 
@@ -52,9 +49,7 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Save(
     if (!Dsr->GetSignal(&Signal, SignalIndex))
       return false;
 
-    DataAddrseg = { (TAddress) &Signal, sizeof(Signal) };
-    SourceDataStream.Init(DataAddrseg);
-
+    SourceDataStream.Init(AsAddrSeg_M(Signal));
     if (!me_StreamTools::SaveStreamTo(&SourceDataStream, OutputStream))
       return false;
   }
@@ -68,28 +63,23 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Load(
   IInputStream * RawInputStream
 )
 {
-  me_StreamTools::TRereadableInputStream InputStream;
   TUint_2 NumSignals;
-  TAddressSegment DataAddrseg;
-  me_StreamsCollection::TWorkmemOutputStream DestDataStream;
   TUint_2 SignalIndex;
   TSignal Signal;
+  me_StreamTools::TRereadableInputStream InputStream;
+  me_StreamsCollection::TWorkmemOutputStream DestDataStream;
 
   InputStream.Init(RawInputStream);
 
   Dsr->Clear();
 
-  DataAddrseg = { (TAddress) &NumSignals, sizeof(NumSignals) };
-  DestDataStream.Init(DataAddrseg);
-
+  DestDataStream.Init(AsAddrSeg_M(NumSignals));
   if (!me_StreamTools::LoadStreamFrom(&DestDataStream, &InputStream))
     return false;
 
   for (SignalIndex = 1; SignalIndex <= NumSignals; ++SignalIndex)
   {
-    DataAddrseg = { (TAddress) &Signal, sizeof(Signal) };
-    DestDataStream.Init(DataAddrseg);
-
+    DestDataStream.Init(AsAddrSeg_M(Signal));
     if (!me_StreamTools::LoadStreamFrom(&DestDataStream, &InputStream))
       return false;
 
