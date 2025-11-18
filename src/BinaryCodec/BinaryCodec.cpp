@@ -71,8 +71,6 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Load(
 
   InputStream.Init(RawInputStream);
 
-  Dsr->Clear();
-
   DestDataStream.Init(AsAddrSeg_M(NumSignals));
   if (!me_StreamTools::LoadStreamFrom(&DestDataStream, &InputStream))
     return false;
