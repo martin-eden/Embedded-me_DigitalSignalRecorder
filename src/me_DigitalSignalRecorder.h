@@ -2,14 +2,22 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-12
+  Last mod.: 2025-11-21
 */
 
 /*
-  Current implementation uses pin 8 for signal input
+  Implementation uses pin 8 for signal input
 
-  That's because we're using counter 2 which can fire interrupt
-  on signal change.
+  Pin 8 on Arduino Uno board is known in datasheet as ICP1 or PB[0].
+*/
+
+/*
+  Module contents:
+
+    * Signal datatype
+    * Signals container
+    * Binary data codec
+    * Text data codec
 */
 
 #pragma once
@@ -44,7 +52,7 @@ namespace me_DigitalSignalRecorder
     You add signal events (timestamps). Or signals (durations).
     It returns signals.
 
-    Flushable container with signal records.
+    It's fushable container with signal records.
     Requires external memory for storage.
   */
   class TDigitalSignalRecorder
