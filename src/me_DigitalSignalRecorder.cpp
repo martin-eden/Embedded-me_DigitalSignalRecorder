@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-18
+  Last mod.: 2025-11-21
 */
 
 /*
@@ -20,6 +20,37 @@
 
   It means there is global class instance that will be called
   from signal handler.
+*/
+
+/*
+  Current behavior of event handler:
+
+    It timestamps event on receiving. Note that interrupt handler
+    code can be executed after quite long time after event occurred.
+
+    This explains strangely short signals in recordings with relatively
+    constant sum of timings:
+
+      550 1950 450 2050 550 1950
+                ^
+                This event handler ran too late, so timestamp is late
+
+  Better way
+
+    Counter 2 provides counter value when event occurred.
+
+    Now I understand how to use it.
+
+    We'll create our personal timer on that counter.
+
+    On overflow we'll update our personal time record. (We can't use
+    time record from [me_RunTime] because it runs on different counter
+    and there is no guarantee that two will be in sync.)
+
+    On event we will have partial (little-endian) timestamp from past.
+    We will need to check for overflow of our counter. If there is
+    overflow, we'll increase big-endian part. After that we combine
+    big- and little-endian parts to get complete timestamp from past.
 */
 
 #include <me_DigitalSignalRecorder.h>
