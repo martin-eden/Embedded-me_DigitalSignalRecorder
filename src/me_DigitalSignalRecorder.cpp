@@ -48,9 +48,11 @@
     and there is no guarantee that two will be in sync.)
 
     On event we will have partial (little-endian) timestamp from past.
-    We will need to check for overflow of our counter. If there is
-    overflow, we'll increase big-endian part. After that we combine
-    big- and little-endian parts to get complete timestamp from past.
+    Event handler runs before counter overflow handler.
+    So in event handler we don't check for counter overflow.
+    We're dealing with past there, not with present.
+    We combine big- and little-endian parts to get complete timestamp
+    from past.
 */
 
 #include <me_DigitalSignalRecorder.h>
