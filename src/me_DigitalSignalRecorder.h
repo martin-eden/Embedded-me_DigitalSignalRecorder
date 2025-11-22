@@ -52,7 +52,7 @@ namespace me_DigitalSignalRecorder
     You add signal events (timestamps). Or signals (durations).
     It returns signals.
 
-    It's fushable container with signal records.
+    It's flushable container with signal records.
     Requires external memory for storage.
   */
   class TDigitalSignalRecorder
