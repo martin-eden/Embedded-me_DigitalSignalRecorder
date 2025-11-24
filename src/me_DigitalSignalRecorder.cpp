@@ -230,12 +230,6 @@ static me_Duration::TDuration GetSignalTimestamp()
   me_Counters::TCounter2 CaptiveCounter;
   me_Duration::TDuration Result;
 
-  if (CaptiveCounter.Status->GotMarkA)
-  {
-    AdvanceSignalTimestamp();
-    CaptiveCounter.Status->GotMarkA = true; // cleared by one
-  }
-
   Result = me_Duration::GetVolatile(CurrentSignalTimestamp);
   me_Duration::Add(&Result, GetDurationFromMark(*CaptiveCounter.EventMark));
 
