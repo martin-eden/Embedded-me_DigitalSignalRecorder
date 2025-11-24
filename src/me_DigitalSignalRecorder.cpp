@@ -329,6 +329,8 @@ void me_DigitalSignalRecorder::StartRecording()
 {
   me_Counters::TCounter2 CaptiveCounter;
 
+  DigitalSignalRecorder.Clear();
+
   CaptiveCounter.Status->GotEventMark = true; // cleared by one
   CaptiveCounter.Interrupts->OnEvent = true;
 
