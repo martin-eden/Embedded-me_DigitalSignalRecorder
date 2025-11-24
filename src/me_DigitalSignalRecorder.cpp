@@ -242,20 +242,20 @@ static me_Duration::TDuration GetSignalTimestamp()
   return Result;
 }
 
-static void StopTimer()
-{
-  me_Counters::TCounter2 CaptiveCounter;
-
-  CaptiveCounter.Control->DriveSource =
-    (TUint_1) me_Counters::TDriveSource_Counter2::None;
-}
-
 static void StartTimer()
 {
   me_Counters::TCounter2 CaptiveCounter;
 
   CaptiveCounter.Control->DriveSource =
     (TUint_1) me_Counters::TDriveSource_Counter2::Internal_FullSpeed;
+}
+
+static void StopTimer()
+{
+  me_Counters::TCounter2 CaptiveCounter;
+
+  CaptiveCounter.Control->DriveSource =
+    (TUint_1) me_Counters::TDriveSource_Counter2::None;
 }
 
 // [Interrupt handler] Process signal change
