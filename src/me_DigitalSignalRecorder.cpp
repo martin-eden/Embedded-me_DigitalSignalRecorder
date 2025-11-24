@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-22
+  Last mod.: 2025-11-24
 */
 
 /*
@@ -43,13 +43,13 @@
 
     We'll create our personal timer on that counter.
 
-    On overflow we'll update our personal time record. (We can't use
+    On new period we'll update our personal time record. (We can't use
     time record from [me_RunTime] because it runs on different counter
-    and there is no guarantee that two will be in sync.)
+    and there is no guarantee that that two will be in sync.)
 
     On event we will have partial (little-endian) timestamp from past.
-    Event handler runs before counter overflow handler.
-    So in event handler we don't check for counter overflow.
+    Event handler runs before counter period end handler.
+    So in event handler we don't check for period end.
     We're dealing with past there, not with present.
     We combine big- and little-endian parts to get complete timestamp
     from past.
@@ -105,7 +105,7 @@ static TSignal * GetSlotAddr(
   return (TSignal *) SlotAddr;
 }
 
-// Check index
+// [Internal] Check index
 TBool TDigitalSignalRecorder::CheckIndex(
   TUint_2 Index
 )
@@ -127,7 +127,7 @@ TBool TDigitalSignalRecorder::GetSignal(
   return true;
 }
 
-// Set signal record
+// [Internal] Set signal record
 TBool TDigitalSignalRecorder::SetSignal(
   TSignal Signal,
   TUint_2 Index
@@ -145,7 +145,7 @@ TBool TDigitalSignalRecorder::SetSignal(
   return true;
 }
 
-// Adds signal. Used by binary loader
+// Adds signal. Used by loaders
 TBool TDigitalSignalRecorder::AddSignal(
   TSignal Signal
 )
@@ -158,12 +158,13 @@ TBool TDigitalSignalRecorder::AddSignal(
   return SetSignal(Signal, NumSignals);
 }
 
-// Adds signal given _signal event_
+// Adds signal given _signal event_. Used by event handler
 TBool TDigitalSignalRecorder::AddEvent(
   TSignalEvent Event
 )
 {
   TSignal Signal;
+  TBool IsValidSignal;
 
   if (!HasPrevEvent)
   {
@@ -173,12 +174,15 @@ TBool TDigitalSignalRecorder::AddEvent(
     return true;
   }
 
-  Signal.Duration = Event.Timestamp;
-  me_Duration::Subtract(&Signal.Duration, PrevEvent.Timestamp);
-
   Signal.IsOn = PrevEvent.IsOn;
 
+  Signal.Duration = Event.Timestamp;
+  IsValidSignal = me_Duration::Subtract(&Signal.Duration, PrevEvent.Timestamp);
+
   PrevEvent = Event;
+
+  if (!IsValidSignal)
+    return false;
 
   return AddSignal(Signal);
 }
@@ -193,7 +197,9 @@ TUint_2 TDigitalSignalRecorder::GetNumSignals()
 TDigitalSignalRecorder me_DigitalSignalRecorder::DigitalSignalRecorder;
 
 const TUint_2 TimerFreq_Hz = 1000;
-static const me_Duration::TDuration TrackingPeriod = { 0, 0, 1, 0 };
+const TUint_4 TrackingPeriod_Us = (TUint_4) 1000000 / TimerFreq_Hz;
+static const me_Duration::TDuration
+  TrackingPeriod = me_Duration::MicrosToDuration(TrackingPeriod_Us);
 
 static TUint_2 MarkToMicrosDivisor = 1;
 
@@ -212,10 +218,11 @@ static me_Duration::TDuration GetDurationFromMark(
   return { 0, 0, 0, NumMicros};
 }
 
-// [Interrupt handler] Advance current signal time
-static void OnPeriod_I()
+// Advance current signal time
+static void AdvanceSignalTimestamp()
 {
   me_Duration::TDuration Tmp;
+
   Tmp = me_Duration::GetVolatile(CurrentSignalTimestamp);
   me_Duration::Add(&Tmp, TrackingPeriod);
   me_Duration::SetVolatile(CurrentSignalTimestamp, Tmp);
@@ -225,6 +232,12 @@ static me_Duration::TDuration GetSignalTimestamp()
 {
   me_Counters::TCounter2 CaptiveCounter;
   me_Duration::TDuration Result;
+
+  if (CaptiveCounter.Status->GotMarkA)
+  {
+    AdvanceSignalTimestamp();
+    CaptiveCounter.Status->GotMarkA = true; // cleared by one
+  }
 
   Result = me_Duration::GetVolatile(CurrentSignalTimestamp);
   me_Duration::Add(&Result, GetDurationFromMark(*CaptiveCounter.EventMark));
@@ -245,7 +258,7 @@ static void StartTimer()
   me_Counters::TCounter2 CaptiveCounter;
 
   CaptiveCounter.Control->DriveSource =
-    (TUint_1) me_Counters::TDriveSource_Counter2::Internal_SlowBy2Pow6;
+    (TUint_1) me_Counters::TDriveSource_Counter2::Internal_FullSpeed;
 }
 
 // [Interrupt handler] Process signal change
@@ -264,13 +277,18 @@ static void OnEventCapture_I()
     !CaptiveCounter.Control->EventIsOnUpbeat;
 }
 
-// Start recording
-void me_DigitalSignalRecorder::StartRecording()
+/*
+  Prepare recorder
+
+  Stops timer and sets it up to tick with desired speed.
+  Sets event capture handler.
+*/
+void me_DigitalSignalRecorder::PrepareRecorder()
 {
   const TUint_1 EventPinNum = 8;
 
   const me_HardwareClockScaling::TClockScaleSetting
-    Spec = { .Prescale_PowOfTwo = 6, .CounterNumBits = 16 };
+    Spec = { .Prescale_PowOfTwo = 0, .CounterNumBits = 16 };
 
   me_Pins::TInputPin EventPin;
   me_Counters::TCounter2 CaptiveCounter;
@@ -289,28 +307,47 @@ void me_DigitalSignalRecorder::StartRecording()
   *CaptiveCounter.MarkA = ClockScale.CounterLimit;
   MarkToMicrosDivisor = ClockScale.CounterLimit + 1;
 
-  me_Interrupts::On_Counter2_CapturedEvent = OnEventCapture_I;
-  CaptiveCounter.Interrupts->OnEvent = true;
-
-  me_Interrupts::On_Counter2_ReachedMarkA = OnPeriod_I;
-  CaptiveCounter.Interrupts->OnMarkA = true;
-
-  CaptiveCounter.Control->EventIsOnUpbeat = false;
-  CaptiveCounter.Status->GotEventMark = true; // cleared by one
+  me_Interrupts::On_Counter2_ReachedMarkA = AdvanceSignalTimestamp;
   CaptiveCounter.Status->GotMarkA = true; // cleared by one
+  CaptiveCounter.Interrupts->OnMarkA = true;
   me_Duration::SetVolatile(CurrentSignalTimestamp, me_Duration::Zero);
   *CaptiveCounter.Current = 0;
+
+  me_Interrupts::On_Counter2_CapturedEvent = OnEventCapture_I;
+  CaptiveCounter.Interrupts->OnEvent = false;
+  CaptiveCounter.Status->GotEventMark = true; // cleared by one
+
+  CaptiveCounter.Control->EventIsOnUpbeat = false;
+}
+
+/*
+  Start recording
+
+  Enables event handler. Starts timer.
+*/
+void me_DigitalSignalRecorder::StartRecording()
+{
+  me_Counters::TCounter2 CaptiveCounter;
+
+  CaptiveCounter.Status->GotEventMark = true; // cleared by one
+  CaptiveCounter.Interrupts->OnEvent = true;
 
   StartTimer();
 }
 
-// Stop recording
+/*
+  Stop recording
+
+  Disables event handler. Stops timer.
+*/
 void me_DigitalSignalRecorder::StopRecording()
 {
   me_Counters::TCounter2 CaptiveCounter;
 
   StopTimer();
+
   CaptiveCounter.Interrupts->OnEvent = false;
+  CaptiveCounter.Status->GotEventMark = true; // cleared by one
 }
 
 /*

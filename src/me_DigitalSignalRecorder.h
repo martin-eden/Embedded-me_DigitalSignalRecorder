@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-21
+  Last mod.: 2025-11-22
 */
 
 /*
@@ -81,6 +81,7 @@ namespace me_DigitalSignalRecorder
   extern TDigitalSignalRecorder DigitalSignalRecorder;
 
   // ( Start/stop adding events to singleton
+  void PrepareRecorder();
   void StartRecording();
   void StopRecording();
   // )
@@ -104,4 +105,5 @@ namespace me_DigitalSignalRecorder
   2025 # # # # # # # # # # # # # # # #
   2025-11-09
   2025-11-12
+  2025-11-22
 */
