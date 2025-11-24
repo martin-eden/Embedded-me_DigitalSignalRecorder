@@ -164,7 +164,6 @@ TBool TDigitalSignalRecorder::AddEvent(
 )
 {
   TSignal Signal;
-  TBool IsValidSignal;
 
   if (!HasPrevEvent)
   {
@@ -177,12 +176,10 @@ TBool TDigitalSignalRecorder::AddEvent(
   Signal.IsOn = PrevEvent.IsOn;
 
   Signal.Duration = Event.Timestamp;
-  IsValidSignal = me_Duration::Subtract(&Signal.Duration, PrevEvent.Timestamp);
+  if (!me_Duration::Subtract(&Signal.Duration, PrevEvent.Timestamp))
+    Signal.Duration = me_Duration::Zero;
 
   PrevEvent = Event;
-
-  if (!IsValidSignal)
-    return false;
 
   return AddSignal(Signal);
 }
