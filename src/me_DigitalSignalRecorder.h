@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-22
+  Last mod.: 2025-11-25
 */
 
 /*
@@ -29,15 +29,6 @@
 namespace me_DigitalSignalRecorder
 {
   /*
-    Signal event is on/off flag and timestamp
-  */
-  struct TSignalEvent
-  {
-    TBool IsOn;
-    me_Duration::TDuration Timestamp;
-  };
-
-  /*
     Signal is on/off flag and duration
   */
   struct TSignal
@@ -49,9 +40,6 @@ namespace me_DigitalSignalRecorder
   /*
     Signal recorder
 
-    You add signal events (timestamps). Or signals (durations).
-    It returns signals.
-
     It's flushable container with signal records.
     Requires external memory for storage.
   */
@@ -61,7 +49,6 @@ namespace me_DigitalSignalRecorder
       void Init(TAddressSegment Span);
       void Clear();
       TBool AddSignal(TSignal Signal);
-      TBool AddEvent(TSignalEvent Event);
       TBool GetSignal(TSignal * Signal, TUint_2 Index);
       TUint_2 GetNumSignals();
 
@@ -73,8 +60,6 @@ namespace me_DigitalSignalRecorder
       TAddressSegment Span;
       TUint_2 NumSignals_Max;
       TUint_2 NumSignals;
-      TBool HasPrevEvent;
-      TSignalEvent PrevEvent;
   };
 
   // Singleton instance
@@ -106,4 +91,5 @@ namespace me_DigitalSignalRecorder
   2025-11-09
   2025-11-12
   2025-11-22
+  2025-11-25
 */

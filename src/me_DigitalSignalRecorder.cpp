@@ -48,9 +48,6 @@
     and there is no guarantee that that two will be in sync.)
 
     On event we will have partial (little-endian) timestamp from past.
-    Event handler runs before counter period end handler.
-    So in event handler we don't check for period end.
-    We're dealing with past there, not with present.
     We combine big- and little-endian parts to get complete timestamp
     from past.
 */
@@ -84,7 +81,6 @@ void TDigitalSignalRecorder::Init(
 void TDigitalSignalRecorder::Clear()
 {
   NumSignals = 0;
-  HasPrevEvent = false;
 }
 
 // [Internal] Get address of element in our array
@@ -145,7 +141,7 @@ TBool TDigitalSignalRecorder::SetSignal(
   return true;
 }
 
-// Adds signal. Used by loaders
+// Add signal
 TBool TDigitalSignalRecorder::AddSignal(
   TSignal Signal
 )
@@ -156,32 +152,6 @@ TBool TDigitalSignalRecorder::AddSignal(
   NumSignals = NumSignals + 1;
 
   return SetSignal(Signal, NumSignals);
-}
-
-// Adds signal given _signal event_. Used by event handler
-TBool TDigitalSignalRecorder::AddEvent(
-  TSignalEvent Event
-)
-{
-  TSignal Signal;
-
-  if (!HasPrevEvent)
-  {
-    PrevEvent = Event;
-    HasPrevEvent = true;
-
-    return true;
-  }
-
-  Signal.IsOn = PrevEvent.IsOn;
-
-  Signal.Duration = Event.Timestamp;
-  if (!me_Duration::Subtract(&Signal.Duration, PrevEvent.Timestamp))
-    Signal.Duration = me_Duration::Zero;
-
-  PrevEvent = Event;
-
-  return AddSignal(Signal);
 }
 
 // Get number of stored signals. Used by binary codec
@@ -252,6 +222,44 @@ static void StopTimer()
     (TUint_1) me_Counters::TDriveSource_Counter2::None;
 }
 
+/*
+  Signal event is on/off flag and timestamp
+*/
+struct TSignalEvent
+{
+  TBool IsOn;
+  me_Duration::TDuration Timestamp;
+};
+
+static TSignalEvent PrevEvent;
+static TBool HasPrevEvent;
+
+// Adds signal given _signal event_. Used by event handler
+static TBool AddEvent(
+  TSignalEvent Event
+)
+{
+  TSignal Signal;
+
+  if (!HasPrevEvent)
+  {
+    PrevEvent = Event;
+    HasPrevEvent = true;
+
+    return true;
+  }
+
+  Signal.IsOn = PrevEvent.IsOn;
+
+  Signal.Duration = Event.Timestamp;
+  if (!me_Duration::Subtract(&Signal.Duration, PrevEvent.Timestamp))
+    Signal.Duration = me_Duration::Zero;
+
+  PrevEvent = Event;
+
+  return DigitalSignalRecorder.AddSignal(Signal);
+}
+
 // [Interrupt handler] Process signal change
 static void OnEventCapture_I()
 {
@@ -261,7 +269,7 @@ static void OnEventCapture_I()
   Event.IsOn = !CaptiveCounter.Control->EventIsOnUpbeat;
   Event.Timestamp = GetSignalTimestamp();
 
-  DigitalSignalRecorder.AddEvent(Event);
+  AddEvent(Event);
 
   // Trigger next capture at opposite side of signal edge
   CaptiveCounter.Control->EventIsOnUpbeat =
@@ -320,7 +328,7 @@ void me_DigitalSignalRecorder::StartRecording()
 {
   me_Counters::TCounter2 CaptiveCounter;
 
-  DigitalSignalRecorder.Clear();
+  HasPrevEvent = false;
 
   CaptiveCounter.Status->GotEventMark = true; // cleared by one
   CaptiveCounter.Interrupts->OnEvent = true;
