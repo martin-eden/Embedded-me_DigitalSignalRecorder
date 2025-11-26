@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-25
+  Last mod.: 2025-11-26
 */
 
 /*
@@ -168,6 +168,7 @@ const TUint_4 TrackingPeriod_Us = (TUint_4) 1000000 / TimerFreq_Hz;
 static const me_Duration::TDuration
   TrackingPeriod = me_Duration::MicrosToDuration(TrackingPeriod_Us);
 
+static TUint_1 CounterDriveSource = 0;
 static TUint_2 MarkToMicrosDivisor = 1;
 
 static volatile me_Duration::TDuration CurrentSignalTimestamp;
@@ -210,8 +211,7 @@ static void StartTimer()
 {
   me_Counters::TCounter2 CaptiveCounter;
 
-  CaptiveCounter.Control->DriveSource =
-    (TUint_1) me_Counters::TDriveSource_Counter2::Internal_FullSpeed;
+  CaptiveCounter.Control->DriveSource = CounterDriveSource;
 }
 
 static void StopTimer()
@@ -286,9 +286,6 @@ void me_DigitalSignalRecorder::PrepareRecorder()
 {
   const TUint_1 EventPinNum = 8;
 
-  const me_HardwareClockScaling::TClockScaleSetting
-    Spec = { .Prescale_PowOfTwo = 0, .CounterNumBits = 16 };
-
   me_Pins::TInputPin EventPin;
   me_Counters::TCounter2 CaptiveCounter;
   me_HardwareClockScaling::TClockScale ClockScale;
@@ -300,11 +297,16 @@ void me_DigitalSignalRecorder::PrepareRecorder()
   CaptiveCounter.
     SetAlgorithm(me_Counters::TAlgorithm_Counter2::Count_ToMarkA);
 
-  me_HardwareClockScaling::
-    CalculateClockScale_Spec(&ClockScale, TimerFreq_Hz, Spec);
+  me_HardwareClockScaling::CalculateClockScale_Specs(
+    &ClockScale,
+    TimerFreq_Hz,
+    me_HardwareClockScaling::AtMega328::GetSpecs_Counter2()
+  );
 
   *CaptiveCounter.MarkA = ClockScale.CounterLimit;
   MarkToMicrosDivisor = ClockScale.CounterLimit + 1;
+
+  CaptiveCounter.GetPrescaleConst(&CounterDriveSource, ClockScale.Prescale_PowOfTwo);
 
   me_Interrupts::On_Counter2_ReachedMarkA = AdvanceSignalTimestamp;
   CaptiveCounter.Status->GotMarkA = true; // cleared by one
