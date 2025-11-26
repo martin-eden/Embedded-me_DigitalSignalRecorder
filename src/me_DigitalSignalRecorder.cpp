@@ -309,14 +309,10 @@ void me_DigitalSignalRecorder::PrepareRecorder()
   CaptiveCounter.GetPrescaleConst(&CounterDriveSource, ClockScale.Prescale_PowOfTwo);
 
   me_Interrupts::On_Counter2_ReachedMarkA = AdvanceSignalTimestamp;
-  CaptiveCounter.Status->GotMarkA = true; // cleared by one
   CaptiveCounter.Interrupts->OnMarkA = true;
-  me_Duration::SetVolatile(CurrentSignalTimestamp, me_Duration::Zero);
-  *CaptiveCounter.Current = 0;
 
   me_Interrupts::On_Counter2_CapturedEvent = OnEventCapture_I;
   CaptiveCounter.Interrupts->OnEvent = false;
-  CaptiveCounter.Status->GotEventMark = true; // cleared by one
 
   CaptiveCounter.Control->EventIsOnUpbeat = false;
 }
@@ -324,7 +320,7 @@ void me_DigitalSignalRecorder::PrepareRecorder()
 /*
   Start recording
 
-  Enables event handler. Starts timer.
+  Enables event handler. Starts timer from zero.
 */
 void me_DigitalSignalRecorder::StartRecording()
 {
@@ -334,6 +330,10 @@ void me_DigitalSignalRecorder::StartRecording()
 
   CaptiveCounter.Status->GotEventMark = true; // cleared by one
   CaptiveCounter.Interrupts->OnEvent = true;
+
+  me_Duration::SetVolatile(CurrentSignalTimestamp, me_Duration::Zero);
+  *CaptiveCounter.Current = 0;
+  CaptiveCounter.Status->GotMarkA = true; // cleared by one
 
   StartTimer();
 }
