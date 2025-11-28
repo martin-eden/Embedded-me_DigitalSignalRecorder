@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-26
+  Last mod.: 2025-11-28
 */
 
 /*
@@ -192,7 +192,7 @@ static void AdvanceSignalTimestamp()
   me_Duration::TDuration Tmp;
 
   Tmp = me_Duration::GetVolatile(CurrentSignalTimestamp);
-  me_Duration::Add(&Tmp, TrackingPeriod);
+  me_Duration::WrappedAdd(&Tmp, TrackingPeriod);
   me_Duration::SetVolatile(CurrentSignalTimestamp, Tmp);
 }
 
@@ -202,7 +202,7 @@ static me_Duration::TDuration GetSignalTimestamp()
   me_Duration::TDuration Result;
 
   Result = me_Duration::GetVolatile(CurrentSignalTimestamp);
-  me_Duration::Add(&Result, GetDurationFromMark(*CaptiveCounter.EventMark));
+  me_Duration::WrappedAdd(&Result, GetDurationFromMark(*CaptiveCounter.EventMark));
 
   return Result;
 }
@@ -252,8 +252,7 @@ static TBool AddEvent(
   Signal.IsOn = PrevEvent.IsOn;
 
   Signal.Duration = Event.Timestamp;
-  if (!me_Duration::Subtract(&Signal.Duration, PrevEvent.Timestamp))
-    Signal.Duration = me_Duration::Zero;
+  me_Duration::CappedSub(&Signal.Duration, PrevEvent.Timestamp);
 
   PrevEvent = Event;
 
@@ -331,7 +330,7 @@ void me_DigitalSignalRecorder::StartRecording()
   CaptiveCounter.Status->GotEventMark = true; // cleared by one
   CaptiveCounter.Interrupts->OnEvent = true;
 
-  me_Duration::SetVolatile(CurrentSignalTimestamp, me_Duration::Zero);
+  me_Duration::SetVolatile(CurrentSignalTimestamp, me_Duration::MinValue);
   *CaptiveCounter.Current = 0;
   CaptiveCounter.Status->GotMarkA = true; // cleared by one
 
