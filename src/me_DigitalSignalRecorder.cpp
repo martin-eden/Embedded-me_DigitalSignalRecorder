@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-28
+  Last mod.: 2025-11-30
 */
 
 /*
@@ -165,8 +165,7 @@ TDigitalSignalRecorder me_DigitalSignalRecorder::DigitalSignalRecorder;
 
 const TUint_2 TimerFreq_Hz = 1000;
 const TUint_4 TrackingPeriod_Us = (TUint_4) 1000000 / TimerFreq_Hz;
-static const me_Duration::TDuration
-  TrackingPeriod = me_Duration::MicrosToDuration(TrackingPeriod_Us);
+static me_Duration::TDuration TrackingPeriod = {};
 
 static TUint_1 CounterDriveSource = 0;
 static TUint_2 MarkToMicrosDivisor = 1;
@@ -305,7 +304,7 @@ void me_DigitalSignalRecorder::PrepareRecorder()
   *CaptiveCounter.MarkA = ClockScale.CounterLimit;
   MarkToMicrosDivisor = ClockScale.CounterLimit + 1;
 
-  CaptiveCounter.GetPrescaleConst(&CounterDriveSource, ClockScale.Prescale_PowOfTwo);
+  me_Counters::GetPrescaleConst_Counter2(&CounterDriveSource, ClockScale.Prescale_PowOfTwo);
 
   me_Interrupts::On_Counter2_ReachedMarkA = AdvanceSignalTimestamp;
   CaptiveCounter.Interrupts->OnMarkA = true;
@@ -314,6 +313,8 @@ void me_DigitalSignalRecorder::PrepareRecorder()
   CaptiveCounter.Interrupts->OnEvent = false;
 
   CaptiveCounter.Control->EventIsOnUpbeat = false;
+
+  me_Duration::MicrosToDuration(&TrackingPeriod, TrackingPeriod_Us);
 }
 
 /*
