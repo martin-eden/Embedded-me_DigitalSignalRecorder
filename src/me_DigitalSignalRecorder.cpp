@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-30
+  Last mod.: 2025-12-09
 */
 
 /*
@@ -304,7 +304,7 @@ void me_DigitalSignalRecorder::PrepareRecorder()
   *CaptiveCounter.MarkA = ClockScale.CounterLimit;
   MarkToMicrosDivisor = ClockScale.CounterLimit + 1;
 
-  me_Counters::GetPrescaleConst_Counter2(&CounterDriveSource, ClockScale.Prescale_PowOfTwo);
+  me_Counters::Prescale_HwFromSw_Counter2(&CounterDriveSource, ClockScale.Prescale_PowOfTwo);
 
   me_Interrupts::On_Counter2_ReachedMarkA = AdvanceSignalTimestamp;
   CaptiveCounter.Interrupts->OnMarkA = true;
