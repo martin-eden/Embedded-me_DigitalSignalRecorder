@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-12-09
+  Last mod.: 2025-12-14
 */
 
 /*
@@ -286,7 +286,7 @@ void me_DigitalSignalRecorder::PrepareRecorder()
 
   me_Pins::TInputPin EventPin;
   me_Counters::TCounter2 CaptiveCounter;
-  me_HardwareClockScaling::TClockScale ClockScale;
+  me_HardwareClockScaling::THardwareDuration ClockScale;
 
   EventPin.Init(EventPinNum);
 
