@@ -301,8 +301,8 @@ void me_DigitalSignalRecorder::PrepareRecorder()
     me_HardwareClockScaling::AtMega328::GetSpecs_Counter2()
   );
 
-  *CaptiveCounter.MarkA = ClockScale.CounterLimit;
-  MarkToMicrosDivisor = ClockScale.CounterLimit + 1;
+  *CaptiveCounter.MarkA = ClockScale.Scale_BaseOne;
+  MarkToMicrosDivisor = ClockScale.Scale_BaseOne + 1;
 
   me_Counters::Prescale_HwFromSw_Counter2(&CounterDriveSource, ClockScale.Prescale_PowOfTwo);
 
