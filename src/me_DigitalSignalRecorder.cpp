@@ -168,19 +168,25 @@ const TUint_4 TrackingPeriod_Us = (TUint_4) 1000000 / TimerFreq_Hz;
 static me_Duration::TDuration TrackingPeriod = {};
 
 static TUint_1 CounterDriveSource = 0;
-static TUint_2 MarkToMicrosDivisor = 1;
+static TUint_2 MaxMarkValuePlusOne = 1; // initialized later
 
 static volatile me_Duration::TDuration CurrentSignalTimestamp;
 
+// Convert point inside segment to segment
 static me_Duration::TDuration GetDurationFromMark(
-  TUint_2 CounterMarkValue
+  TUint_2 MarkValue
 )
 {
+  /*
+    That's internal function, so we're not checking that
+    point in inside segment.
+  */
+
   TUint_2 NumMicros;
 
   NumMicros =
     (TUint_4)
-    TimerFreq_Hz * CounterMarkValue / MarkToMicrosDivisor;
+    TrackingPeriod_Us * MarkValue / MaxMarkValuePlusOne;
 
   return { 0, 0, 0, NumMicros};
 }
@@ -302,7 +308,7 @@ void me_DigitalSignalRecorder::PrepareRecorder()
   );
 
   *CaptiveCounter.MarkA = ClockScale.Scale_BaseOne;
-  MarkToMicrosDivisor = ClockScale.Scale_BaseOne + 1;
+  MaxMarkValuePlusOne = (TUint_4) ClockScale.Scale_BaseOne + 1;
 
   me_Counters::Prescale_HwFromSw_Counter2(&CounterDriveSource, ClockScale.Prescale_PowOfTwo);
 
@@ -361,4 +367,5 @@ void me_DigitalSignalRecorder::StopRecording()
   2025-11-18
   2025-11-22
   2025-11-25
+  2025-12-14
 */
