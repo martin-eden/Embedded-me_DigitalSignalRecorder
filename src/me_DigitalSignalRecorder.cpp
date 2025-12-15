@@ -301,7 +301,7 @@ void me_DigitalSignalRecorder::PrepareRecorder()
   CaptiveCounter.
     SetAlgorithm(me_Counters::TAlgorithm_Counter2::Count_ToMarkA);
 
-  me_HardwareClockScaling::CalculateClockScale_Specs(
+  me_HardwareClockScaling::CalculateHardwareDuration_Specs(
     &ClockScale,
     TimerFreq_Hz,
     me_HardwareClockScaling::AtMega328::GetSpecs_Counter2()
