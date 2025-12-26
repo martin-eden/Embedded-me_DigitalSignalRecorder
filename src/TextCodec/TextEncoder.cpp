@@ -2,14 +2,15 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-12
+  Last mod.: 2025-12-26
 */
 
 #include <me_DigitalSignalRecorder.h>
 
 #include <me_BaseTypes.h>
 #include <me_BaseInterfaces.h>
-#include <me_Console.h>
+#include <me_BaseTypesIo.h>
+#include <me_Duration.h>
 
 using namespace me_DigitalSignalRecorder;
 
@@ -18,43 +19,38 @@ using namespace me_DigitalSignalRecorder;
 
   We would prefer parenthesis format like
 
-    ( ( YES ( 1 320 ) ) ( NO ( 340 ) ) )
+    ( ( Y ( 1 320 ) ) ( N ( 340 ) ) )
 
   But it requires restorable input stream to parse.
 
-  So we're using length-prefixed format:
+  So we're using length-prefixed fixed format:
 
     2
-    YES 0 0 1 320
-    NO 0 0 0 340
+    Y 0 0 1 320
+    N 0 0 0 340
 */
 
-// Write duration to console
-static void SerializeDuration(
-  me_Duration::TDuration Duration
-)
-{
-  Console.Print(Duration.KiloS);
-  Console.Print(Duration.S);
-  Console.Print(Duration.MilliS);
-  Console.Print(Duration.MicroS);
-}
-
-// Write signal to console
+// Write signal to stream
 static void SerializeSignal(
-  TSignal Signal
+  TSignal Signal,
+  IOutputStream * OutputStream
 )
 {
-  Console.Print(Signal.IsOn);
-  SerializeDuration(Signal.Duration);
-  Console.EndLine();
+  me_Duration::TDuration Duration;
+
+  me_BaseTypesIo::Write_Bool(Signal.IsOn, OutputStream);
+  OutputStream->Write(' ');
+  if (!me_Duration::DurationFromMicros(&Duration, Signal.Duration_Us))
+    Duration = {};
+  me_Duration::Write(Duration, OutputStream);
 }
 
 /*
   Save signals to some loadable format
 */
 void me_DigitalSignalRecorder::TextCodec::Save(
-  TDigitalSignalRecorder * Dsr
+  TDigitalSignalRecorder * Dsr,
+  IOutputStream * OutputStream
 )
 {
   TUint_2 NumSignals;
@@ -63,14 +59,16 @@ void me_DigitalSignalRecorder::TextCodec::Save(
 
   NumSignals = Dsr->GetNumSignals();
 
-  Console.Print(NumSignals);
-  Console.EndLine();
+  me_BaseTypesIo::Write_Uint_2(NumSignals, OutputStream);
+  OutputStream->Write('\n');
 
   for (Index = 1; Index <= NumSignals; ++Index)
   {
     Dsr->GetSignal(&Signal, Index);
 
-    SerializeSignal(Signal);
+    SerializeSignal(Signal, OutputStream);
+
+    OutputStream->Write('\n');
   }
 }
 
@@ -79,4 +77,5 @@ void me_DigitalSignalRecorder::TextCodec::Save(
   2025-10-12
   2025-11-10
   2025-11-12
+  2025-12-26
 */

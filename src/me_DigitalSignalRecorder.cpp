@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-12-14
+  Last mod.: 2025-12-26
 */
 
 /*
@@ -57,7 +57,6 @@
 #include <me_BaseTypes.h>
 #include <me_BaseInterfaces.h>
 
-#include <me_Duration.h>
 #include <me_Counters.h>
 #include <me_RunTime.h>
 #include <me_Pins.h>
@@ -165,67 +164,11 @@ TDigitalSignalRecorder me_DigitalSignalRecorder::DigitalSignalRecorder;
 
 const TUint_2 TimerFreq_Hz = 1000;
 const TUint_4 TrackingPeriod_Us = (TUint_4) 1000000 / TimerFreq_Hz;
-static me_Duration::TDuration TrackingPeriod = {};
 
 static TUint_1 CounterDriveSource = 0;
 static TUint_2 MaxMarkValuePlusOne = 1; // initialized later
 
-static volatile me_Duration::TDuration CurrentSignalTimestamp;
-
-// Convert point inside segment to segment
-static me_Duration::TDuration GetDurationFromMark(
-  TUint_2 MarkValue
-)
-{
-  /*
-    That's internal function, so we're not checking that
-    point in inside segment.
-  */
-
-  TUint_2 NumMicros;
-
-  NumMicros =
-    (TUint_4)
-    TrackingPeriod_Us * MarkValue / MaxMarkValuePlusOne;
-
-  return { 0, 0, 0, NumMicros};
-}
-
-// Advance current signal time
-static void AdvanceSignalTimestamp()
-{
-  me_Duration::TDuration Tmp;
-
-  Tmp = me_Duration::GetVolatile(CurrentSignalTimestamp);
-  me_Duration::WrappedAdd(&Tmp, TrackingPeriod);
-  me_Duration::SetVolatile(CurrentSignalTimestamp, Tmp);
-}
-
-static me_Duration::TDuration GetSignalTimestamp()
-{
-  me_Counters::TCounter2 CaptiveCounter;
-  me_Duration::TDuration Result;
-
-  Result = me_Duration::GetVolatile(CurrentSignalTimestamp);
-  me_Duration::WrappedAdd(&Result, GetDurationFromMark(*CaptiveCounter.EventMark));
-
-  return Result;
-}
-
-static void StartTimer()
-{
-  me_Counters::TCounter2 CaptiveCounter;
-
-  CaptiveCounter.Control->DriveSource = CounterDriveSource;
-}
-
-static void StopTimer()
-{
-  me_Counters::TCounter2 CaptiveCounter;
-
-  CaptiveCounter.Control->DriveSource =
-    (TUint_1) me_Counters::TDriveSource_Counter2::None;
-}
+static volatile TUint_4 CurrentSignalTimestamp_Us;
 
 /*
   Signal event is on/off flag and timestamp
@@ -233,7 +176,7 @@ static void StopTimer()
 struct TSignalEvent
 {
   TBool IsOn;
-  me_Duration::TDuration Timestamp;
+  TUint_4 Timestamp_Us;
 };
 
 static TSignalEvent PrevEvent;
@@ -255,29 +198,74 @@ static TBool AddEvent(
   }
 
   Signal.IsOn = PrevEvent.IsOn;
-
-  Signal.Duration = Event.Timestamp;
-  me_Duration::CappedSub(&Signal.Duration, PrevEvent.Timestamp);
+  Signal.Duration_Us = Event.Timestamp_Us - PrevEvent.Timestamp_Us;
 
   PrevEvent = Event;
 
   return DigitalSignalRecorder.AddSignal(Signal);
 }
 
-// [Interrupt handler] Process signal change
+/*
+  [Internal] Convert counter's value to microseconds
+*/
+static TUint_2 GetMicrosFromMark(
+  TUint_2 MarkValue
+)
+{
+  /*
+    That's internal function, so we're not checking that
+    point in inside segment.
+  */
+
+  /*
+    <MarkValue> is point between 0 and counter's period.
+    We know length of period, so we just multiplying it to
+    normalized point position.
+  */
+
+  return
+    (TUint_4)
+    TrackingPeriod_Us * MarkValue / MaxMarkValuePlusOne;
+}
+
+// [Interrupt handler] Called when value on capture pin changes
 static void OnEventCapture_I()
 {
   TSignalEvent Event;
   me_Counters::TCounter2 CaptiveCounter;
 
   Event.IsOn = !CaptiveCounter.Control->EventIsOnUpbeat;
-  Event.Timestamp = GetSignalTimestamp();
+  Event.Timestamp_Us =
+    CurrentSignalTimestamp_Us +
+    GetMicrosFromMark(*CaptiveCounter.EventMark);
 
   AddEvent(Event);
 
   // Trigger next capture at opposite side of signal edge
   CaptiveCounter.Control->EventIsOnUpbeat =
     !CaptiveCounter.Control->EventIsOnUpbeat;
+}
+
+// [Interrupt handler] Called when counter reaches limit
+static void OnPeriodEnd_I()
+{
+  // Advance current signal time
+  CurrentSignalTimestamp_Us = CurrentSignalTimestamp_Us + TrackingPeriod_Us;
+}
+
+static void StopTimer()
+{
+  me_Counters::TCounter2 CaptiveCounter;
+
+  CaptiveCounter.Control->DriveSource =
+    (TUint_1) me_Counters::TDriveSource_Counter2::None;
+}
+
+static void StartTimer()
+{
+  me_Counters::TCounter2 CaptiveCounter;
+
+  CaptiveCounter.Control->DriveSource = CounterDriveSource;
 }
 
 /*
@@ -310,17 +298,18 @@ void me_DigitalSignalRecorder::PrepareRecorder()
   *CaptiveCounter.MarkA = ClockScale.Scale_BaseOne;
   MaxMarkValuePlusOne = (TUint_4) ClockScale.Scale_BaseOne + 1;
 
-  me_Counters::Prescale_HwFromSw_Counter2(&CounterDriveSource, ClockScale.Prescale_PowOfTwo);
+  me_Counters::Prescale_HwFromSw_Counter2(
+    &CounterDriveSource,
+    ClockScale.Prescale_PowOfTwo
+  );
 
-  me_Interrupts::On_Counter2_ReachedMarkA = AdvanceSignalTimestamp;
+  me_Interrupts::On_Counter2_ReachedMarkA = OnPeriodEnd_I;
   CaptiveCounter.Interrupts->OnMarkA = true;
 
   me_Interrupts::On_Counter2_CapturedEvent = OnEventCapture_I;
   CaptiveCounter.Interrupts->OnEvent = false;
 
   CaptiveCounter.Control->EventIsOnUpbeat = false;
-
-  me_Duration::MicrosToDuration(&TrackingPeriod, TrackingPeriod_Us);
 }
 
 /*
@@ -337,7 +326,7 @@ void me_DigitalSignalRecorder::StartRecording()
   CaptiveCounter.Status->GotEventMark = true; // cleared by one
   CaptiveCounter.Interrupts->OnEvent = true;
 
-  me_Duration::SetVolatile(CurrentSignalTimestamp, me_Duration::MinValue);
+  CurrentSignalTimestamp_Us = 0;
   *CaptiveCounter.Current = 0;
   CaptiveCounter.Status->GotMarkA = true; // cleared by one
 
@@ -368,4 +357,5 @@ void me_DigitalSignalRecorder::StopRecording()
   2025-11-22
   2025-11-25
   2025-12-14
+  2025-12-26
 */

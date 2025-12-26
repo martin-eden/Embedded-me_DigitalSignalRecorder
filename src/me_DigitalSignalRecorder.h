@@ -34,7 +34,7 @@ namespace me_DigitalSignalRecorder
   struct TSignal
   {
     TBool IsOn;
-    me_Duration::TDuration Duration;
+    TUint_4 Duration_Us;
   };
 
   /*
@@ -74,8 +74,8 @@ namespace me_DigitalSignalRecorder
   // Text codec writes to Console
   namespace TextCodec
   {
-    void Save(TDigitalSignalRecorder *);
-    TBool Load(TDigitalSignalRecorder *);
+    void Save(TDigitalSignalRecorder *, IOutputStream *);
+    TBool Load(TDigitalSignalRecorder *, IInputStream *);
   }
 
   // Binary codec writes to stream
