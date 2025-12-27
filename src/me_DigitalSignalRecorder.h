@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-25
+  Last mod.: 2025-12-27
 */
 
 /*
@@ -24,7 +24,6 @@
 
 #include <me_BaseTypes.h>
 #include <me_BaseInterfaces.h>
-#include <me_Duration.h>
 
 namespace me_DigitalSignalRecorder
 {
