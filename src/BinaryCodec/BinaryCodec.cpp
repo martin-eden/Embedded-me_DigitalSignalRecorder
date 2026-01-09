@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-11-18
+  Last mod.: 2026-01-10
 */
 
 /*
@@ -40,7 +40,7 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Save(
 
   NumSignals = Dsr->GetNumSignals();
 
-  SourceDataStream.Init(AsAddrSeg_M(NumSignals));
+  SourceDataStream.Init(M_AsAddrSeg(NumSignals));
   if (!me_StreamTools::SaveStreamTo(&SourceDataStream, OutputStream))
     return false;
 
@@ -49,7 +49,7 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Save(
     if (!Dsr->GetSignal(&Signal, SignalIndex))
       return false;
 
-    SourceDataStream.Init(AsAddrSeg_M(Signal));
+    SourceDataStream.Init(M_AsAddrSeg(Signal));
     if (!me_StreamTools::SaveStreamTo(&SourceDataStream, OutputStream))
       return false;
   }
@@ -71,13 +71,13 @@ TBool me_DigitalSignalRecorder::BinaryCodec::Load(
 
   InputStream.Init(RawInputStream);
 
-  DestDataStream.Init(AsAddrSeg_M(NumSignals));
+  DestDataStream.Init(M_AsAddrSeg(NumSignals));
   if (!me_StreamTools::LoadStreamFrom(&DestDataStream, &InputStream))
     return false;
 
   for (SignalIndex = 1; SignalIndex <= NumSignals; ++SignalIndex)
   {
-    DestDataStream.Init(AsAddrSeg_M(Signal));
+    DestDataStream.Init(M_AsAddrSeg(Signal));
     if (!me_StreamTools::LoadStreamFrom(&DestDataStream, &InputStream))
       return false;
 
