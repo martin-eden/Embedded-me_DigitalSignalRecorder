@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-12-26
+  Last mod.: 2026-02-12
 */
 
 /*
@@ -232,7 +232,7 @@ static TUint_2 GetMicrosFromMark(
 static void OnEventCapture_I()
 {
   TSignalEvent Event;
-  me_Counters::TCounter2 CaptiveCounter;
+  me_Counters::Counter2::TCounter CaptiveCounter;
 
   Event.IsOn = !CaptiveCounter.Control->EventIsOnUpbeat;
   Event.Timestamp_Us =
@@ -255,15 +255,16 @@ static void OnPeriodEnd_I()
 
 static void StopTimer()
 {
-  me_Counters::TCounter2 CaptiveCounter;
+  using namespace me_Counters::Counter2;
 
-  CaptiveCounter.Control->DriveSource =
-    (TUint_1) me_Counters::TDriveSource_Counter2::None;
+  TCounter CaptiveCounter;
+
+  CaptiveCounter.Control->DriveSource = (TUint_1) TDriveSource::None;
 }
 
 static void StartTimer()
 {
-  me_Counters::TCounter2 CaptiveCounter;
+  me_Counters::Counter2::TCounter CaptiveCounter;
 
   CaptiveCounter.Control->DriveSource = CounterDriveSource;
 }
@@ -279,7 +280,7 @@ void me_DigitalSignalRecorder::PrepareRecorder()
   const TUint_1 EventPinNum = 8;
 
   me_Pins::TInputPin EventPin;
-  me_Counters::TCounter2 CaptiveCounter;
+  me_Counters::Counter2::TCounter CaptiveCounter;
   me_HardwareClockScaling::THardwareDuration ClockScale;
 
   EventPin.Init(EventPinNum);
@@ -287,7 +288,7 @@ void me_DigitalSignalRecorder::PrepareRecorder()
   StopTimer();
 
   CaptiveCounter.
-    SetAlgorithm(me_Counters::TAlgorithm_Counter2::Count_ToMarkA);
+    SetAlgorithm(me_Counters::Counter2::TAlgorithm::Count_ToMarkA);
 
   me_HardwareClockScaling::CalculateHardwareDuration_Specs(
     &ClockScale,
@@ -298,7 +299,7 @@ void me_DigitalSignalRecorder::PrepareRecorder()
   *CaptiveCounter.MarkA = ClockScale.Scale_BaseOne;
   MaxMarkValuePlusOne = (TUint_4) ClockScale.Scale_BaseOne + 1;
 
-  me_Counters::Prescale_HwFromSw_Counter2(
+  me_Counters::Counter2::Prescale_HwFromSw(
     &CounterDriveSource,
     ClockScale.Prescale_PowOfTwo
   );
@@ -319,7 +320,7 @@ void me_DigitalSignalRecorder::PrepareRecorder()
 */
 void me_DigitalSignalRecorder::StartRecording()
 {
-  me_Counters::TCounter2 CaptiveCounter;
+  me_Counters::Counter2::TCounter CaptiveCounter;
 
   HasPrevEvent = false;
 
@@ -340,7 +341,7 @@ void me_DigitalSignalRecorder::StartRecording()
 */
 void me_DigitalSignalRecorder::StopRecording()
 {
-  me_Counters::TCounter2 CaptiveCounter;
+  me_Counters::Counter2::TCounter CaptiveCounter;
 
   StopTimer();
 
@@ -349,13 +350,5 @@ void me_DigitalSignalRecorder::StopRecording()
 }
 
 /*
-  2025 # # # # # # # # # # # # # #
-  2025-10-12
-  2025-10-23
-  2025-10-31
-  2025-11-18
-  2025-11-22
-  2025-11-25
-  2025-12-14
-  2025-12-26
+  2025 # # # # # # # # # # # # # # # # # # # # # #
 */
