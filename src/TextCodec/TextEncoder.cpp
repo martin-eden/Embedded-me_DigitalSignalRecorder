@@ -2,7 +2,7 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-12-26
+  Last mod.: 2026-04-03
 */
 
 #include <me_DigitalSignalRecorder.h>
@@ -45,6 +45,13 @@ static void SerializeSignal(
   me_Duration::Write(Duration, OutputStream);
 }
 
+static void EndLine(
+  IOutputStream * OutputStream
+)
+{
+  OutputStream->Write('\n');
+}
+
 /*
   Save signals to some loadable format
 */
@@ -60,7 +67,7 @@ void me_DigitalSignalRecorder::TextCodec::Save(
   NumSignals = Dsr->GetNumSignals();
 
   me_BaseTypesIo::Write_Uint_2(NumSignals, OutputStream);
-  OutputStream->Write('\n');
+  EndLine(OutputStream);
 
   for (Index = 1; Index <= NumSignals; ++Index)
   {
@@ -68,7 +75,7 @@ void me_DigitalSignalRecorder::TextCodec::Save(
 
     SerializeSignal(Signal, OutputStream);
 
-    OutputStream->Write('\n');
+    EndLine(OutputStream);
   }
 }
 
