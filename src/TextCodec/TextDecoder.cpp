@@ -2,30 +2,28 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2025-12-26
+  Last mod.: 2026-04-06
 */
 
 #include <me_DigitalSignalRecorder.h>
 
 #include <me_BaseTypes.h>
-#include <me_BaseInterfaces.h>
-#include <me_BaseTypesIo.h>
 #include <me_Duration.h>
+#include <me_Console.h>
 
 using namespace me_DigitalSignalRecorder;
 
 // [Internal] Load signal from stream
 static TBool ParseSignal(
-  TSignal * Signal,
-  IInputStream * InputStream
+  TSignal * Signal
 )
 {
   me_Duration::TDuration Duration;
 
-  if (!me_BaseTypesIo::Read_Bool(&Signal->IsOn, InputStream))
+  if (!Console.Read(&Signal->IsOn))
     return false;
 
-  if (!me_Duration::Read(&Duration, InputStream))
+  if (!me_Duration::Read(&Duration))
     return false;
 
   if (!me_Duration::MicrosFromDuration(&Signal->Duration_Us, Duration))
@@ -38,8 +36,7 @@ static TBool ParseSignal(
   Load signals from stream
 */
 TBool me_DigitalSignalRecorder::TextCodec::Load(
-  TDigitalSignalRecorder * Dsr,
-  IInputStream * InputStream
+  TDigitalSignalRecorder * Dsr
 )
 {
   /*
@@ -57,12 +54,12 @@ TBool me_DigitalSignalRecorder::TextCodec::Load(
   TUint_2 Index;
   TSignal Signal;
 
-  if (!me_BaseTypesIo::Read_Uint_2(&NumSignals, InputStream))
+  if (!Console.Read(&NumSignals))
     return false;
 
   for (Index = 1; Index <= NumSignals; ++Index)
   {
-    if (!ParseSignal(&Signal, InputStream))
+    if (!ParseSignal(&Signal))
       return false;
 
     Dsr->AddSignal(Signal);
@@ -72,8 +69,6 @@ TBool me_DigitalSignalRecorder::TextCodec::Load(
 }
 
 /*
-  2025-11-09
-  2025-11-10
-  2025-11-12
-  2025-12-26
+  2025 # # # #
+  2026-04-06
 */

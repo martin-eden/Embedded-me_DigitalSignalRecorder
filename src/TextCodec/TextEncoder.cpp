@@ -2,15 +2,14 @@
 
 /*
   Author: Martin Eden
-  Last mod.: 2026-04-03
+  Last mod.: 2026-04-06
 */
 
 #include <me_DigitalSignalRecorder.h>
 
 #include <me_BaseTypes.h>
-#include <me_BaseInterfaces.h>
-#include <me_BaseTypesIo.h>
 #include <me_Duration.h>
+#include <me_Console.h>
 
 using namespace me_DigitalSignalRecorder;
 
@@ -30,34 +29,26 @@ using namespace me_DigitalSignalRecorder;
     N 0 0 0 340
 */
 
-// Write signal to stream
+// Write signal to Console
 static void SerializeSignal(
-  TSignal Signal,
-  IOutputStream * OutputStream
+  TSignal Signal
 )
 {
   me_Duration::TDuration Duration;
 
-  me_BaseTypesIo::Write_Bool(Signal.IsOn, OutputStream);
-  OutputStream->Write(' ');
+  Console.Print(Signal.IsOn);
   if (!me_Duration::DurationFromMicros(&Duration, Signal.Duration_Us))
     Duration = {};
-  me_Duration::Write(Duration, OutputStream);
-}
+  me_Duration::Print(Duration);
 
-static void EndLine(
-  IOutputStream * OutputStream
-)
-{
-  OutputStream->Write('\n');
+  Console.EndLine();
 }
 
 /*
   Save signals to some loadable format
 */
 void me_DigitalSignalRecorder::TextCodec::Save(
-  TDigitalSignalRecorder * Dsr,
-  IOutputStream * OutputStream
+  TDigitalSignalRecorder * Dsr
 )
 {
   TUint_2 NumSignals;
@@ -66,23 +57,17 @@ void me_DigitalSignalRecorder::TextCodec::Save(
 
   NumSignals = Dsr->GetNumSignals();
 
-  me_BaseTypesIo::Write_Uint_2(NumSignals, OutputStream);
-  EndLine(OutputStream);
+  Console.Print(NumSignals);
+  Console.EndLine();
 
   for (Index = 1; Index <= NumSignals; ++Index)
   {
     Dsr->GetSignal(&Signal, Index);
-
-    SerializeSignal(Signal, OutputStream);
-
-    EndLine(OutputStream);
+    SerializeSignal(Signal);
   }
 }
 
 /*
-  2025 # # #
-  2025-10-12
-  2025-11-10
-  2025-11-12
-  2025-12-26
+  2025 # # # # # # #
+  2026-04-06
 */
